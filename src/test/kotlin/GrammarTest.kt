@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 
 class GrammarTest {
 
-    fun assertEqual(
+    private fun assertEqual(
         metadata: UInt,
         languageId: UInt,
         tokenType: StandardTokenType,
@@ -24,7 +24,7 @@ class GrammarTest {
         assertEquals(background, EncodedTokenAttributes.getBackground(metadata))
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata works`() {
         val value = set(
             0u,
@@ -45,7 +45,7 @@ class GrammarTest {
         )
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata can overwrite languageId`() {
         var value = set(
             0u,
@@ -85,7 +85,7 @@ class GrammarTest {
         )
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata can overwrite tokenType`() {
         var value = set(
             0u,
@@ -125,7 +125,7 @@ class GrammarTest {
         )
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata can overwrite font style`() {
         var value = set(
             0u,
@@ -165,7 +165,7 @@ class GrammarTest {
         )
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata can overwrite font style with strikethrough`() {
         var value = set(
             0u,
@@ -206,7 +206,7 @@ class GrammarTest {
         )
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata can overwrite foreground`() {
         var value = set(
             0u,
@@ -246,7 +246,7 @@ class GrammarTest {
         )
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata can overwrite background`() {
         var value = set(
             0u,
@@ -286,7 +286,7 @@ class GrammarTest {
         )
     }
 
-    @Test()
+    @Test
     fun `StackElementMetadata can overwrite balanced backet bit`() {
         var value = set(
             0u,
@@ -310,7 +310,7 @@ class GrammarTest {
         value = set(
             value,
             0u,
-            OptionalStandardTokenTypeConsts.RegEx,
+            OptionalStandardTokenTypeConsts.NotSet,
             true,
             FontStyleConsts.NotSet,
             0u, 0u
@@ -347,12 +347,12 @@ class GrammarTest {
 
     @Test
     fun `StackElementMetadata can work at max values`() {
-        val maxLangId = 255u;
+        val maxLangId = 255u
         val maxTokenType =
-            StandardTokenTypeConsts.Comment or StandardTokenTypeConsts.Other or StandardTokenTypeConsts.RegEx or StandardTokenTypeConsts.String;
-        val maxFontStyle = FontStyleConsts.Bold or FontStyleConsts.Italic or FontStyleConsts.Underline;
-        val maxForeground = 511u;
-        val maxBackground = 254u;
+            StandardTokenTypeConsts.Comment or StandardTokenTypeConsts.Other or StandardTokenTypeConsts.RegEx or StandardTokenTypeConsts.String
+        val maxFontStyle = FontStyleConsts.Bold or FontStyleConsts.Italic or FontStyleConsts.Underline
+        val maxForeground = 511u
+        val maxBackground = 254u
 
         val value = set(
             0u,

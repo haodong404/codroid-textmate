@@ -6,9 +6,7 @@ typealias EncodedToken = UInt
 object EncodedTokenAttributes {
     fun toBinaryStr(encodedTokenAttributes: EncodedToken): String {
         var r = encodedTokenAttributes.toString(2)
-        while (r.length < 32) {
-            r = "0$r"
-        }
+        r = "0".repeat(32 - r.length) + r
         return r
     }
 
@@ -31,40 +29,86 @@ object EncodedTokenAttributes {
         )
     }
 
+    private infix fun UInt.ushr(diff: Int): UInt {
+        return (this.toInt() ushr diff).toUInt()
+    }
+
     fun getLanguageId(encodedTokenAttributes: EncodedToken): UInt {
-        TODO()
+        return (encodedTokenAttributes and EncodedTokenDataConsts.LANGUAGEID_MASK) ushr
+                EncodedTokenDataConsts.LANGUAGEID_OFFSET
     }
 
     fun getTokenType(encodedTokenAttributes: EncodedToken): StandardTokenType {
-        TODO()
+        return ((encodedTokenAttributes and EncodedTokenDataConsts.TOKEN_TYPE_MASK) ushr
+                EncodedTokenDataConsts.TOKEN_TYPE_OFFSET).toByte()
     }
 
     fun containsBalancedBrackets(encodedTokenAttributes: EncodedToken): Boolean {
-        TODO()
+        return (encodedTokenAttributes and EncodedTokenDataConsts.BALANCED_BRACKETS_MASK) != 0u;
     }
 
     fun getFontStyle(encodedTokenAttributes: EncodedToken): FontStyle {
-        TODO()
+        return ((encodedTokenAttributes and EncodedTokenDataConsts.FONT_STYLE_MASK) ushr
+                EncodedTokenDataConsts.FONT_STYLE_OFFSET).toByte()
     }
 
     fun getForeground(encodedTokenAttributes: EncodedToken): UInt {
-        TODO()
+        return (encodedTokenAttributes and EncodedTokenDataConsts.FOREGROUND_MASK) ushr
+                EncodedTokenDataConsts.FOREGROUND_OFFSET
     }
 
     fun getBackground(encodedTokenAttributes: EncodedToken): UInt {
-        TODO()
+        return (encodedTokenAttributes and EncodedTokenDataConsts.BACKGROUND_MASK) ushr
+                EncodedTokenDataConsts.BACKGROUND_OFFSET
     }
 
     fun set(
         encodedTokenAttributes: EncodedToken,
         languageId: UInt,
         tokenType: OptionalStandardTokenType,
-        containsBalancedBrackets: Boolean = false,
+        containsBalancedBrackets: Boolean?,
         fontStyle: FontStyle,
         foreground: UInt,
         background: UInt
     ): UInt {
-        TODO()
+        var languageIdInit = getLanguageId(encodedTokenAttributes);
+        var tokenTypeInit = getTokenType(encodedTokenAttributes);
+        var containsBalancedBracketsBitInit: Int = if (containsBalancedBrackets(encodedTokenAttributes)) 1 else 0;
+        var fontStyleInit = getFontStyle(encodedTokenAttributes);
+        var foregroundInit = getForeground(encodedTokenAttributes);
+        var backgroundInit = getBackground(encodedTokenAttributes);
+
+        if (languageId != 0u) {
+            languageIdInit = languageId;
+        }
+        if (tokenType != OptionalStandardTokenTypeConsts.NotSet) {
+            tokenTypeInit = fromOptionalTokenType(tokenType);
+        }
+
+        containsBalancedBrackets?.let {
+            containsBalancedBracketsBitInit = if (it) 1 else 0
+        }
+
+        if (fontStyle != FontStyleConsts.NotSet) {
+            fontStyleInit = fontStyle;
+        }
+        if (foreground != 0u) {
+            foregroundInit = foreground;
+        }
+        if (background != 0u) {
+            backgroundInit = background;
+        }
+
+        return (
+                ((languageIdInit shl EncodedTokenDataConsts.LANGUAGEID_OFFSET) or
+                        (tokenTypeInit.toUInt() shl EncodedTokenDataConsts.TOKEN_TYPE_OFFSET) or
+                        (containsBalancedBracketsBitInit shl
+                                EncodedTokenDataConsts.BALANCED_BRACKETS_OFFSET).toUInt() or
+                        (fontStyleInit.toUInt() shl EncodedTokenDataConsts.FONT_STYLE_OFFSET) or
+                        (foregroundInit shl EncodedTokenDataConsts.FOREGROUND_OFFSET) or
+                        (backgroundInit shl EncodedTokenDataConsts.BACKGROUND_OFFSET)) ushr
+                        0
+                );
     }
 
 }
@@ -91,14 +135,14 @@ object EncodedTokenAttributes {
  *  - b = background color (9 bits)
  */
 object EncodedTokenDataConsts {
-    const val LANGUAGEID_MASK = 0b00000000000000000000000011111111U
-    const val TOKEN_TYPE_MASK = 0b00000000000000000000001100000000U
-    const val BALANCED_BRACKETS_MASK = 0b00000000000000000000010000000000
-    const val FONT_STYLE_MASK = 0b00000000000000000111100000000000
-    const val FOREGROUND_MASK = 0b00000000111111111000000000000000
-    const val BACKGROUND_MASK = 0b11111111000000000000000000000000
+    const val LANGUAGEID_MASK = 0b00000000000000000000000011111111u
+    const val TOKEN_TYPE_MASK = 0b00000000000000000000001100000000u
+    const val BALANCED_BRACKETS_MASK = 0b00000000000000000000010000000000u
+    const val FONT_STYLE_MASK = 0b00000000000000000111100000000000u
+    const val FOREGROUND_MASK = 0b00000000111111111000000000000000u
+    const val BACKGROUND_MASK = 0b11111111000000000000000000000000u
 
-    const val LANGUAGEID_OFFSET = 0U
+    const val LANGUAGEID_OFFSET = 0
     const val TOKEN_TYPE_OFFSET = 8
     const val BALANCED_BRACKETS_OFFSET = 10
     const val FONT_STYLE_OFFSET = 11
