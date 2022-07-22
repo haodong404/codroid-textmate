@@ -1,4 +1,4 @@
-import org.codroid.textmate.createMatchers
+import org.codroid.textmate.Matchers
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -39,14 +39,25 @@ class MatcherTest {
         )
     )
 
-    private fun nameMatcher(identifiers: Array<String>, stackElements: Array<String>): Boolean {
-        TODO()
+    private fun nameMatcher(identifiers: List<String>, stackElements: Array<String>): Boolean {
+        var lastIndex = 0
+        identifiers.forEach {
+            var temp = false
+            for (i in lastIndex until stackElements.size) {
+                if (stackElements[i] == it) {
+                    lastIndex = i + 1
+                    temp = true
+                }
+            }
+            if (!temp) return false
+        }
+        return true
     }
 
     @Test
     fun `Matcher Tests`() {
-        cases.forEach {
-            val matchers = createMatchers(it.expression, this::nameMatcher)
+        cases.forEachIndexed { index, it ->
+            val matchers = Matchers.create(it.expression, this::nameMatcher)
             var result = false
             matchers.forEach inside@{ m ->
                 if (m.matcher(it.input)) {
@@ -54,7 +65,9 @@ class MatcherTest {
                     return@inside
                 }
             }
-            assertEquals(result, it.result)
+            print("Matcher Test #$index")
+            assertEquals(it.result, result)
+            print("  √\n")
         }
     }
 }
