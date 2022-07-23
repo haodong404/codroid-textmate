@@ -65,9 +65,9 @@ class MatcherTest {
                     return@inside
                 }
             }
-            print("Matcher Test #$index")
+            print("Matcher Test #$index".padEnd(20))
             assertEquals(it.result, result)
-            print("  √\n")
+            print("√\n")
         }
     }
 }

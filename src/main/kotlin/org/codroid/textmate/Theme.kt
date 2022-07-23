@@ -10,10 +10,10 @@ class Theme(
 ) {
     companion object {
         fun createFromRawTheme(
-            source: RawTheme?, colorMap: Array<String>?
+            source: RawTheme? = null, colorMap: Array<String>? = null
         ): Theme = createFromParsedTheme(parseTheme(source), colorMap)
 
-        fun createFromParsedTheme(
+        private fun createFromParsedTheme(
             source: MutableList<ParsedThemeRule>, colorMap: Array<String>?
         ): Theme = resolveParsedThemeRules(source, colorMap)
     }
@@ -22,7 +22,7 @@ class Theme(
         return@CachedFn this.root.match(it)
     }
 
-    fun getColorMap(): List<String> = colorMap.getColorMap()
+    fun getColorMap(): Map<UInt, String> = colorMap.getColorMap()
 
     fun getDefaults(): StyleAttributes = defaults
 
@@ -57,7 +57,7 @@ typealias ScopePath = String
  */
 typealias ScopePattern = String
 
-data class RawTheme(val name: String?, val settings: Array<RawThemeSetting>) {
+data class RawTheme(val name: String? = null, val settings: Array<RawThemeSetting>) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -79,11 +79,33 @@ data class RawTheme(val name: String?, val settings: Array<RawThemeSetting>) {
 
 
 data class Setting(
-    val fontStyle: String, val foreground: String, val background: String
-)
+    val fontStyle: String? = null, var foreground: String? = null, var background: String? = null
+) {
+    override fun equals(other: Any?): Boolean {
+        other?.let {
+            if (other !is Setting) {
+                return false
+            }
+            return fontStyle == other.fontStyle
+                    && foreground == other.foreground
+                    && background == other.background
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        var result = fontStyle?.hashCode() ?: 0
+        result = 31 * result + (foreground?.hashCode() ?: 0)
+        result = 31 * result + (background?.hashCode() ?: 0)
+        return result
+    }
+}
 
 data class RawThemeSetting(
-    val name: String, val scopes: Array<ScopePattern>?, val scope: ScopePattern?, val settings: Setting
+    val name: String? = null,
+    val scopes: Array<ScopePattern>? = null,
+    val scope: ScopePattern? = null,
+    val settings: Setting
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -162,8 +184,27 @@ private fun matchesScope(
 ): Boolean = scopePattern == scopeName || (scopeName.startsWith(scopePattern) && scopeName[scopePattern.length] == '.')
 
 data class StyleAttributes(
-    val fontStyle: FontStyle, val foreground: UInt, val background: UInt
-)
+    val fontStyle: FontStyle, val foregroundId: UInt, val backgroundId: UInt
+) {
+    override fun equals(other: Any?): Boolean {
+        other?.let {
+            if (other !is StyleAttributes) {
+                return false
+            }
+            return fontStyle == other.fontStyle
+                    && foregroundId == other.foregroundId
+                    && backgroundId == other.backgroundId
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        var result = fontStyle.toInt()
+        result = 31 * result + foregroundId.hashCode()
+        result = 31 * result + backgroundId.hashCode()
+        return result
+    }
+}
 
 /**
  * Parse a raw theme into rules.
@@ -186,7 +227,7 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
         }
 
         var fontStyle = FontStyleConsts.NotSet
-        if (setting.settings.fontStyle == "string") {
+        setting.settings.fontStyle?.let {
             fontStyle = FontStyleConsts.None
             val segments = setting.settings.fontStyle.split(' ')
             for (seg in segments) {
@@ -199,17 +240,17 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
             }
         }
         var foreground: String? = null
-        if (isValidHexColor(setting.settings.foreground)) {
+        if (isValidHexColor(setting.settings.foreground ?: "")) {
             foreground = setting.settings.foreground
         }
         var background: String? = null
-        if (isValidHexColor(setting.settings.background)) {
+        if (isValidHexColor(setting.settings.background ?: "")) {
             background = setting.settings.background
         }
 
         for (item in scopes) {
-            var scopeNow = item.trim()
-            val segments = item.split(" ")
+            val scopeNow = item.trim()
+            val segments = scopeNow.split(" ")
 
             val scope = segments[segments.size - 1]
             var parentScopes: List<ScopeName>? = null
@@ -282,7 +323,7 @@ private fun resolveParsedThemeRules(
     for (item in parsedThemeRules) {
         parsedThemeRulesClone.add(item)
     }
-    while (parsedThemeRulesClone.isNotEmpty() && parsedThemeRulesClone[0].scope.isEmpty()) {
+    while (parsedThemeRulesClone.isNotEmpty() && parsedThemeRulesClone.first.scope.isEmpty()) {
         val incomingDefaults = parsedThemeRulesClone.first
         parsedThemeRulesClone.removeFirst()
         if (incomingDefaults.fontStyle != FontStyleConsts.NotSet) {
@@ -291,10 +332,10 @@ private fun resolveParsedThemeRules(
         incomingDefaults.foreground?.let { defaultForeground = it }
         incomingDefaults.background?.let { defaultBackground = it }
     }
-    val colorMap = ColorMap(colorMap)
+    val colorMap1 = ColorMap(colorMap)
     val defaults = StyleAttributes(
-        defaultFontStyle, colorMap.getId(defaultForeground).toUInt(),
-        colorMap.getId(defaultBackground).toUInt()
+        defaultFontStyle, colorMap1.getId(defaultForeground),
+        colorMap1.getId(defaultBackground)
     )
     val root = ThemeTrieElement(
         ThemeTrieElementRule(
@@ -302,39 +343,39 @@ private fun resolveParsedThemeRules(
             FontStyleConsts.NotSet, 0u, 0u
         )
     )
-    for (rule in parsedThemeRules) {
+    for (rule in parsedThemeRulesClone) {
         root.insert(
             0,
             rule.scope,
             rule.parentScopes,
             rule.fontStyle,
-            colorMap.getId(rule.foreground).toUInt(),
-            colorMap.getId(rule.background).toUInt()
+            colorMap1.getId(rule.foreground),
+            colorMap1.getId(rule.background)
         )
     }
-    return Theme(colorMap, defaults, root)
+    return Theme(colorMap1, defaults, root)
 }
 
 class ColorMap(colorMap: Array<String>?) {
     private val isFrozen: Boolean
-    private var lastColorId = 0
-    private val id2color = mutableListOf<String>()
-    private val color2id = mutableMapOf<String, Int>()
+    private var lastColorId = 0u
+    private val id2color = mutableMapOf<UInt, String>()
+    private val color2id = mutableMapOf<String, UInt>()
 
     init {
         if (colorMap != null) {
             isFrozen = true
             for ((idx, item) in colorMap.withIndex()) {
-                color2id[item] = idx
-                id2color[idx] = item
+                color2id[item] = idx.toUInt()
+                id2color[idx.toUInt()] = item
             }
         } else {
             isFrozen = false
         }
     }
 
-    fun getId(color: String?): Int {
-        if (color == null) return 0
+    fun getId(color: String?): UInt {
+        if (color == null) return 0u
         val colorUpper = color.uppercase()
         var value = color2id[colorUpper]
         if (value != null) {
@@ -349,7 +390,7 @@ class ColorMap(colorMap: Array<String>?) {
         return value
     }
 
-    fun getColorMap(): List<String> = id2color
+    fun getColorMap(): Map<UInt, String> = id2color
 }
 
 class ThemeTrieElementRule(
