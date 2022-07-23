@@ -1,40 +1,18 @@
 package org.codroid.textmate.utils
 
-inline fun <reified T : Any> T.clone(): T {
-    return doClone(this) as T
-}
-
-fun doClone(something: Any): Any {
-    return if (something is Array<*>) {
-        something.cloneArray()
-    } else {
-        something.clone()
-    }
-}
-
-private fun Array<*>.cloneArray(): Array<Any> {
-    val r = arrayOf<Any>(this.size)
-    var i = 0
-    val len: Int = this.size
-    while (i < len) {
-        this[i]?.let {
-            r[i] = doClone(it)
-        }
-        i++
-    }
-    return r
-}
-
-fun Any.mergeObjects(vararg sources: Array<Any>): Any {
-    TODO()
-}
-
 fun basename(path: String): String {
     return when (val idx = path.lastIndexOf('/').inv() or path.lastIndexOf('\\').inv()) {
         0 -> path
         (path.length - 1).inv() -> basename(path.substring(0, path.length - 1))
         else -> path.substring(idx.inv() + 1)
     }
+}
+
+inline fun <reified T : Cloneable> MutableList<T>.clone(): MutableList<T> {
+    val cloned = MutableList(this.size) {
+        this[it]
+    }
+    return cloned
 }
 
 private var CAPTURING_REGEX_SOURCE = Regex("\\\$(\\d+)|\\\$*(\\d+):/(downcase|upcase)}")
@@ -81,6 +59,10 @@ fun strcmp(a: String, b: String): Int {
     return if (a < b) -1
     else if (a > b) 1
     else 0
+}
+
+fun strLisCmp(a: List<String>?, b: List<String>?): Int {
+    return strArrCmp(a?.toTypedArray(), b?.toTypedArray())
 }
 
 fun strArrCmp(a: Array<String>?, b: Array<String>?): Int {
@@ -142,3 +124,10 @@ val performanceNow =
     } else {
         performance!!
     }
+
+fun Byte.toBoolean(): Boolean {
+    return when (this) {
+        0.toByte() -> false
+        else -> true
+    }
+}
