@@ -13,8 +13,8 @@ class Theme(
             source: RawTheme? = null, colorMap: Array<String>? = null
         ): Theme = createFromParsedTheme(parseTheme(source), colorMap)
 
-        private fun createFromParsedTheme(
-            source: MutableList<ParsedThemeRule>, colorMap: Array<String>?
+        fun createFromParsedTheme(
+            source: MutableList<ParsedThemeRule>, colorMap: Array<String>? = null
         ): Theme = resolveParsedThemeRules(source, colorMap)
     }
 
@@ -37,6 +37,29 @@ class Theme(
             effectiveRule.fontStyle, effectiveRule.foreground, effectiveRule.background
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        other?.let {
+            if (other !is Theme) {
+                return false
+            }
+            return root == other.root && colorMap == other.colorMap && defaults == other.defaults
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        var result = colorMap.hashCode()
+        result = 31 * result + defaults.hashCode()
+        result = 31 * result + root.hashCode()
+        result = 31 * result + cachedMatchRoot.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "Theme(colorMap=$colorMap, defaults=$defaults, root=$root, cachedMatchRoot=$cachedMatchRoot)"
+    }
+
 }
 
 /**
@@ -86,9 +109,7 @@ data class Setting(
             if (other !is Setting) {
                 return false
             }
-            return fontStyle == other.fontStyle
-                    && foreground == other.foreground
-                    && background == other.background
+            return fontStyle == other.fontStyle && foreground == other.foreground && background == other.background
         }
         return false
     }
@@ -170,7 +191,7 @@ private fun scopePathMatchesParentScopes(
     var scopePathClone = scopePath?.clone()
     while (scopePathClone != null) {
         if (matchesScope(scopePathClone.scopeName, scopePattern)) {
-            index++;
+            index++
             if (index == parentScopes.size) return true
             scopePattern = parentScopes[index]
         }
@@ -191,9 +212,7 @@ data class StyleAttributes(
             if (other !is StyleAttributes) {
                 return false
             }
-            return fontStyle == other.fontStyle
-                    && foregroundId == other.foregroundId
-                    && backgroundId == other.backgroundId
+            return fontStyle == other.fontStyle && foregroundId == other.foregroundId && backgroundId == other.backgroundId
         }
         return false
     }
@@ -216,9 +235,13 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
     for ((idx, setting) in settings.withIndex()) {
         val scopes = mutableListOf<String>()
         if (setting.scope != null) {
-            var scope = setting.scope
-            scope = scope.replace(Regex("^,+"), "")
-            scope = scope.replace(Regex("/,+\$"), "")
+            val scope = StringBuilder(setting.scope.trim())
+            if (scope.startsWith(',')) {   // remove leading commas
+                scope.deleteAt(0)
+            }
+            if (scope.endsWith(',')) {  // remove trailing commas
+                scope.deleteAt(scope.length - 1)
+            }
             scopes.addAll(scope.split(','))
         } else if (setting.scopes != null) {
             scopes.addAll(setting.scopes)
@@ -281,7 +304,7 @@ typealias FontStyle = Byte
 fun fontStyleToString(fontStyle: FontStyle): String {
     if (fontStyle == FontStyleConsts.NotSet) return "not set"
 
-    var style = StringBuilder()
+    val style = StringBuilder()
     if (fontStyle.and(FontStyleConsts.Italic).toBoolean()) {
         style.append("italic ")
     }
@@ -334,13 +357,11 @@ private fun resolveParsedThemeRules(
     }
     val colorMap1 = ColorMap(colorMap)
     val defaults = StyleAttributes(
-        defaultFontStyle, colorMap1.getId(defaultForeground),
-        colorMap1.getId(defaultBackground)
+        defaultFontStyle, colorMap1.getId(defaultForeground), colorMap1.getId(defaultBackground)
     )
     val root = ThemeTrieElement(
         ThemeTrieElementRule(
-            0, null,
-            FontStyleConsts.NotSet, 0u, 0u
+            0, null, FontStyleConsts.NotSet, 0u, 0u
         )
     )
     for (rule in parsedThemeRulesClone) {
@@ -356,7 +377,7 @@ private fun resolveParsedThemeRules(
     return Theme(colorMap1, defaults, root)
 }
 
-class ColorMap(colorMap: Array<String>?) {
+class ColorMap(colorMap: Array<String>? = null) {
     private val isFrozen: Boolean
     private var lastColorId = 0u
     private val id2color = mutableMapOf<UInt, String>()
@@ -391,6 +412,19 @@ class ColorMap(colorMap: Array<String>?) {
     }
 
     fun getColorMap(): Map<UInt, String> = id2color
+    override fun toString(): String {
+        return "ColorMap(isFrozen=$isFrozen, lastColorId=$lastColorId, id2color=$id2color, color2id=$color2id)"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        other?.let {
+            if (other !is ColorMap) {
+                return false
+            }
+            return toString().contentEquals(other.toString())
+        }
+        return false
+    }
 }
 
 class ThemeTrieElementRule(
@@ -421,13 +455,19 @@ class ThemeTrieElementRule(
             this.background = background
         }
     }
+
+    override fun toString(): String {
+        return "ThemeTrieElementRule(scopeDepth=$scopeDepth, parentScopes=$parentScopes, fontStyle=$fontStyle, foreground=$foreground, background=$background)"
+    }
+
+
 }
 
 typealias TrieChildrenMap = HashMap<String, ThemeTrieElement>
 
 class ThemeTrieElement(
     private val mainRule: ThemeTrieElementRule,
-    val rulesWithParentScopes: MutableList<ThemeTrieElementRule> = arrayListOf(),
+    private val rulesWithParentScopes: MutableList<ThemeTrieElementRule> = arrayListOf(),
     private val children: TrieChildrenMap = TrieChildrenMap()
 ) {
     companion object {
@@ -466,7 +506,7 @@ class ThemeTrieElement(
             return sortBySpecificity(rulesWithParentScopes)
         }
         val dotIndex = scope.indexOf('.')
-        var head = ""
+        val head: String
         var tail = ""
         if (dotIndex == -1) {
             head = scope
@@ -496,7 +536,7 @@ class ThemeTrieElement(
         }
 
         val dotIndex = scope.indexOf(".")
-        var head = ""
+        val head: String
         var tail = ""
         if (dotIndex == -1) {
             head = scope
@@ -518,13 +558,13 @@ class ThemeTrieElement(
         )
     }
 
-    fun doInsertHere(
+    private fun doInsertHere(
         scopeDepth: Int, parentScopes: List<ScopeName>?, fontStyle: FontStyle, foreground: UInt, background: UInt
     ) {
         if (parentScopes == null) {
             // Merge into the main rule
-            mainRule.acceptOverwrite(scopeDepth, fontStyle, foreground, background);
-            return;
+            mainRule.acceptOverwrite(scopeDepth, fontStyle, foreground, background)
+            return
         }
         // Try to merge into existing rule
         for (rule in rulesWithParentScopes) {
@@ -551,14 +591,33 @@ class ThemeTrieElement(
         }
         rulesWithParentScopes.add(
             ThemeTrieElementRule(
-                scopeDepth,
-                parentScopes,
-                fontStyleCopy,
-                foregroundCopy,
-                backgroundCopy
+                scopeDepth, parentScopes, fontStyleCopy, foregroundCopy, backgroundCopy
             )
         )
     }
+
+
+    override fun equals(other: Any?): Boolean {
+        other?.let {
+            if (other !is ThemeTrieElement) {
+                return false
+            }
+            return toString().contentEquals(other.toString())
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        var result = mainRule.hashCode()
+        result = 31 * result + rulesWithParentScopes.hashCode()
+        result = 31 * result + children.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "ThemeTrieElement(mainRule=$mainRule, rulesWithParentScopes=$rulesWithParentScopes, children=$children)"
+    }
+
 }
 
 object FontStyleConsts {
