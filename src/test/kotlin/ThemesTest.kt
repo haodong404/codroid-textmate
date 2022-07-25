@@ -1,4 +1,4 @@
-import org.codroid.textmate.*
+import org.codroid.textmate.theme.*
 import org.codroid.textmate.utils.strArrCmp
 import org.codroid.textmate.utils.strcmp
 import kotlin.experimental.or

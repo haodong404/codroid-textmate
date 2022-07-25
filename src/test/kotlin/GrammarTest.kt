@@ -1,5 +1,7 @@
 import org.codroid.textmate.*
 import org.codroid.textmate.EncodedTokenAttributes.set
+import org.codroid.textmate.theme.FontStyle
+import org.codroid.textmate.theme.FontStyleConsts
 import kotlin.experimental.or
 import kotlin.test.Test
 import kotlin.test.assertEquals

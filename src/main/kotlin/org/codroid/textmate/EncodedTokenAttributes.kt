@@ -1,5 +1,7 @@
 package org.codroid.textmate
 
+import org.codroid.textmate.theme.FontStyle
+import org.codroid.textmate.theme.FontStyleConsts
 
 typealias EncodedToken = UInt
 

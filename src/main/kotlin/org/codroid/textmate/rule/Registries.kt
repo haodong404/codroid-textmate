@@ -1,8 +1,8 @@
 package org.codroid.textmate.rule
 
-import org.codroid.textmate.ScopeName
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.RawRepository
+import org.codroid.textmate.theme.ScopeName
 
 interface RuleRegistry {
     fun getRule(ruleId: RuleId): Rule

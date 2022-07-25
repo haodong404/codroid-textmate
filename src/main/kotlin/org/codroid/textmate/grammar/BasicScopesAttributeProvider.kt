@@ -3,7 +3,7 @@ package org.codroid.textmate.grammar
 import org.codroid.textmate.EmbeddedLanguagesMap
 import org.codroid.textmate.OptionalStandardTokenType
 import org.codroid.textmate.OptionalStandardTokenTypeConsts
-import org.codroid.textmate.ScopeName
+import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.utils.CachedFn
 import org.codroid.textmate.utils.escapeRegExpCharacters
 

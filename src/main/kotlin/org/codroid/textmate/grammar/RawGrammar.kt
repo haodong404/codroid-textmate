@@ -1,7 +1,7 @@
 package org.codroid.textmate.grammar
 
-import org.codroid.textmate.RuleId
-import org.codroid.textmate.ScopeName
+import org.codroid.textmate.rule.RuleId
+import org.codroid.textmate.theme.ScopeName
 
 data class Location(val filename: String, val line: Int, val char: Int)
 

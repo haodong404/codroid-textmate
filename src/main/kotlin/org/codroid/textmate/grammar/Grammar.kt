@@ -1,6 +1,6 @@
 package org.codroid.textmate.grammar
 
-import org.codroid.textmate.ScopeName
+import org.codroid.textmate.theme.ScopeName
 
 interface GrammarRepository {
     fun lookup(scopeName: ScopeName): RawGrammar?
