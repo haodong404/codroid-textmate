@@ -8,13 +8,40 @@ class MatchRule(
     override val name: String?,
     override val contentName: String?,
 
-    match: String? = null,
+    match: String,
     val captures: Array<CaptureRule?>
 ) : Rule(location, id, name, contentName) {
-    private var cachedCompiledPatterns: RegExpSourceList?
+    private var cachedCompiledPatterns: RegExpSourceList? = null
     private val match = RegExpSource(match, this.id)
-
-    init {
-
+    override fun dispose() {
+        if (this.cachedCompiledPatterns != null) {
+            this.cachedCompiledPatterns!!.dispose()
+            this.cachedCompiledPatterns = null
+        }
     }
+
+    fun debugMatchRegExp(): String = this.match.source
+
+    override fun collectPatterns(grammar: RuleRegistry, out: RegExpSourceList) {
+        out.push(match)
+    }
+
+    override fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String?): CompiledRule =
+        this.getCachedCompiledPatterns(grammar).compile(grammar)
+
+    override fun compileAG(
+        grammar: RuleRegistryOnigLib,
+        endRegexSource: String?,
+        allowA: Boolean,
+        allowG: Boolean
+    ): CompiledRule = this.getCachedCompiledPatterns(grammar).compileAG(grammar, allowA, allowG)
+
+    private fun getCachedCompiledPatterns(grammar: RuleRegistryOnigLib): RegExpSourceList {
+        if (this.cachedCompiledPatterns == null) {
+            this.cachedCompiledPatterns = RegExpSourceList()
+            this.collectPatterns(grammar, this.cachedCompiledPatterns!!)
+        }
+        return this.cachedCompiledPatterns!!
+    }
+
 }

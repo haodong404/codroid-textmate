@@ -26,6 +26,7 @@ class RuleId(val id: Int) {
     override fun hashCode(): Int {
         return id
     }
+
 }
 
 abstract class Rule(

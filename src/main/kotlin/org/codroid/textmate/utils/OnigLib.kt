@@ -36,7 +36,7 @@ object FindOptionConsts {
 }
 
 data class OnigScanner(
-    val findNextMatchSync: (string: OnigString, startPosition: Int, options: OrMask) -> OnigMatch?,
+    val findNextMatchSync: (string: OnigString, startPosition: Int, options: FindOption) -> OnigMatch?,
     val dispose: () -> Unit?
 )
 
