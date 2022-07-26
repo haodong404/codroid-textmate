@@ -1,18 +1,72 @@
 package org.codroid.textmate.rule
-private val HAS_BACK_REFERENCES = Regex("""\\(\d+)""")
-private val BACK_REFERENCING_END = Regex("""\\(\d+)""")
 
-class RuleId
+import org.codroid.textmate.grammar.Location
+import org.codroid.textmate.utils.OnigCaptureIndex
+import org.codroid.textmate.utils.RegexSource
+import org.codroid.textmate.utils.basename
 
-const val endRuleId = -1
-const val whileRuleId = -2
+val HAS_BACK_REFERENCES = Regex("""\\(\d+)""")
+val BACK_REFERENCING_END = Regex("""\\(\d+)""")
 
-fun ruleIdFromNumber(id: Int): RuleId {
-    TODO()
+class RuleId(val id: Int) {
+    companion object {
+        const val End = -1
+        const val While = -2
+
+        fun from(id: Int) = RuleId(id)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is RuleId) {
+            return this.id == other.id
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return id
+    }
 }
 
-fun ruleIdToNumber(id: RuleId): Int {
-    TODO()
-}
+abstract class Rule(
+    open val location: Location? = null,
+    open val id: RuleId,
+    open val name: String? = null,
+    open val contentName: String? = null
+) {
+    private val nameIsCapturing = RegexSource.hasCaptures(name)
+    private val contentNameIsCapturing = RegexSource.hasCaptures(contentName)
 
-abstract class Rule
+    abstract fun dispose()
+
+    fun debugName(): String {
+        val locate =
+            if (this.location != null) "${basename(this.location!!.filename)}:${this.location!!.line}" else "unknown"
+        return "${this.name}#${this.id} @ $locate"
+    }
+
+    fun getName(lineText: String?, captureIndices: Array<OnigCaptureIndex>?): String? {
+        if (!this.nameIsCapturing || this.name == null || lineText == null || captureIndices == null) {
+            return this.name
+        }
+        return RegexSource.replaceCaptures(this.name!!, lineText, captureIndices)
+    }
+
+    fun getContentName(lineText: String, captureIndices: Array<OnigCaptureIndex>): String? {
+        if (!this.contentNameIsCapturing || this.contentName == null) {
+            return this.contentName
+        }
+        return RegexSource.replaceCaptures(this.contentName!!, lineText, captureIndices)
+    }
+
+    abstract fun collectPatterns(grammar: RuleRegistry, out: RegExpSourceList)
+
+    abstract fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String?): CompiledRule
+
+    abstract fun compileAG(
+        grammar: RuleRegistryOnigLib,
+        endRegexSource: String?,
+        allowA: Boolean,
+        allowG: Boolean
+    ): CompiledRule
+}
