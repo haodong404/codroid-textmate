@@ -64,7 +64,7 @@ class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
         this.hasBackReferences = HAS_BACK_REFERENCES.matches(this.source)
     }
 
-    override fun clone(): RegExpSource {
+    public override fun clone(): RegExpSource {
         return RegExpSource(this.source, this.ruleId)
     }
 

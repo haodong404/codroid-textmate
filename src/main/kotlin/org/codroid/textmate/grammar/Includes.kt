@@ -21,7 +21,7 @@ class SelfReference : IncludeReference {
         get() = IncludeReferenceKind.Self
 }
 
-class RelativeReference(val scopeName: ScopeName) : IncludeReference {
+class RelativeReference(val ruleName: ScopeName) : IncludeReference {
     override val kind: IncludeReferenceKind
         get() = IncludeReferenceKind.RelativeReference
 }

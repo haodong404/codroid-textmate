@@ -180,7 +180,7 @@ fun collectExternalReferencesInRules(
         }
         if (rule.patterns != null) {
             collectExternalReferencesInRules(
-                rule.patterns,
+                rule.patterns!!,
                 ContextWithRepository(
                     context = context,
                     repository = patternRepository
@@ -203,7 +203,7 @@ fun collectExternalReferencesInRules(
                 collectExternalReferencesInTopLevelRule(context, result)
             is RelativeReference ->
                 collectExternalReferencesInTopLevelRepositoryRule(
-                    reference.scopeName,
+                    reference.ruleName,
                     ContextWithRepository(context, patternRepository),
                     result
                 )

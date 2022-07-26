@@ -25,14 +25,14 @@ data class RawGrammar(
 typealias RawRepositoryMap = HashMap<String, RawRule>
 
 data class RawRepository(
-    override val location: Location? = null,
-    val map: RawRepositoryMap? = null
+    override var location: Location? = null,
+    var map: RawRepositoryMap? = null
 ) : Locatable(location)
 
 data class RawRule(
     override val location: Location? = null,
 
-    val id: RuleId? = null,
+    var id: RuleId? = null,
 
     val include: String? = null,
 
@@ -47,7 +47,7 @@ data class RawRule(
     val endCaptures: RawCaptures? = null,
     val while_: String? = null,
     val whileCaptures: RawCaptures? = null,
-    val patterns: Array<RawRule>? = null,
+    var patterns: Array<RawRule>? = null,
 
     val repository: RawRepository? = null,
     val applyEndPatternLast: Boolean? = null
@@ -59,5 +59,5 @@ typealias RawCapturesMap = HashMap<String, RawRule>
 class RawCaptures(
     override val location: Location? = null,
 
-    val captureMap: RawRule? = null
+    val map: RawCapturesMap? = null
 ) : Locatable(location)

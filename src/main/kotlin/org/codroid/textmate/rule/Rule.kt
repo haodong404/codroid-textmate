@@ -10,8 +10,8 @@ val BACK_REFERENCING_END = Regex("""\\(\d+)""")
 
 class RuleId(val id: Int) {
     companion object {
-        const val End = -1
-        const val While = -2
+        val End = RuleId(-1)
+        val While = RuleId(-2)
 
         fun from(id: Int) = RuleId(id)
     }
@@ -27,6 +27,11 @@ class RuleId(val id: Int) {
         return id
     }
 
+}
+
+interface WithPatternRule {
+    val patterns: Array<RuleId>
+    val hasMissingPatterns: Boolean
 }
 
 abstract class Rule(
@@ -62,11 +67,11 @@ abstract class Rule(
 
     abstract fun collectPatterns(grammar: RuleRegistry, out: RegExpSourceList)
 
-    abstract fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String?): CompiledRule
+    abstract fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String): CompiledRule
 
     abstract fun compileAG(
         grammar: RuleRegistryOnigLib,
-        endRegexSource: String?,
+        endRegexSource: String,
         allowA: Boolean,
         allowG: Boolean
     ): CompiledRule
