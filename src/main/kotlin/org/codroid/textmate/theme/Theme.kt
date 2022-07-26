@@ -5,6 +5,17 @@ import java.util.LinkedList
 import kotlin.experimental.and
 import kotlin.experimental.or
 
+/**
+ * ThemeProvide
+ * @see <a href="https://github.com/microsoft/vscode-textmate/blob/caab3de34a8cc7182141c9e31e0f42b96a3a1bac/src/grammar/grammar.ts" >
+ *     src/grammar/grammar.ts</a>
+ */
+interface ThemeProvider {
+    fun themeMatch(scopePath: ScopeStack): StyleAttributes?
+
+    fun getDefaults(): StyleAttributes
+}
+
 class Theme(
     private val colorMap: ColorMap, private val defaults: StyleAttributes, private val root: ThemeTrieElement
 ) {
@@ -79,6 +90,7 @@ typealias ScopePath = String
  * Examples: `foo.bar boo.baz,quick quack`
  */
 typealias ScopePattern = String
+
 private fun scopePathMatchesParentScopes(
     scopePath: ScopeStack?, parentScopes: List<ScopeName>?
 ): Boolean {
