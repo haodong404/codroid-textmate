@@ -11,7 +11,7 @@ interface RuleRegistry {
 }
 
 interface GrammarRegistry {
-    fun getExternalGrammar(scopeName: ScopeName, repository: RawRepository): RawGrammar?
+    fun getExternalGrammar(scopeName: ScopeName, repository: RawRepository?): RawGrammar?
 }
 
 interface RuleRegistryOnigLib : RuleRegistry, OnigLib {

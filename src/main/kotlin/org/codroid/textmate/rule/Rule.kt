@@ -8,7 +8,7 @@ import org.codroid.textmate.utils.basename
 val HAS_BACK_REFERENCES = Regex("""\\(\d+)""")
 val BACK_REFERENCING_END = Regex("""\\(\d+)""")
 
-class RuleId(val id: Int) {
+class RuleId(var id: Int) {
     companion object {
         val End = RuleId(-1)
         val While = RuleId(-2)
@@ -25,6 +25,11 @@ class RuleId(val id: Int) {
 
     override fun hashCode(): Int {
         return id
+    }
+
+    operator fun inc(): RuleId {
+        this.id++
+        return this
     }
 
 }

@@ -1,6 +1,7 @@
 package org.codroid.textmate
 
 import org.codroid.textmate.grammar.RawGrammar
+import org.codroid.textmate.grammar.StateStack
 import org.codroid.textmate.theme.RawTheme
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.Theme
@@ -8,7 +9,8 @@ import org.codroid.textmate.utils.OnigLib
 
 /**
  * This file is equivalent to main.ts in vscode-textmate.
- * https://github.com/microsoft/vscode-textmate/blob/main/src/main.ts
+ * @see <a href="https://github.com/microsoft/vscode-textmate/blob/caab3de34a8cc7182141c9e31e0f42b96a3a1bac/src/main.ts">
+ *     src/main.ts</a>
  */
 
 typealias EmbeddedLanguagesMap = HashMap<ScopeName, Int>

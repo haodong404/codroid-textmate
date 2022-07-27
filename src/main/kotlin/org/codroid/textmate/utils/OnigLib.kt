@@ -44,3 +44,7 @@ data class OnigString(
     val content: String,
     val dispose: () -> Unit?
 )
+
+fun disposeOnigString(str: OnigString) {
+    str.dispose()
+}

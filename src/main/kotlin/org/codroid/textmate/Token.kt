@@ -3,7 +3,7 @@
 package org.codroid.textmate
 
 data class Token(
-    val startIndex: Int, val endIndex: Int, val scopes: Array<String>
+    var startIndex: Int, val endIndex: Int, val scopes: Array<String>
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -31,7 +31,7 @@ data class TokenizeLineResult(
     /**
      * The `prevState` to be passed on to the next line tokenization.
      */
-    val ruleStack: StateStack,
+    val ruleStack: StackElementDef,
     /**
      * Did tokenization stop early due to reaching the time limit.
      */
@@ -69,7 +69,7 @@ data class TokenizeLineResult2(
     /**
      * The `prevState` to be passed on to the next line tokenization.
      */
-    val ruleStack: StateStack,
+    val ruleStack: StackElementDef,
     /**
      * Did tokenization stop early due to reaching the time limit.
      */

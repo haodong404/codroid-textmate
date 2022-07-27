@@ -19,7 +19,18 @@ data class RawGrammar(
     val fileTypes: Array<String>?,
     val name: String,
     val firstLineMatch: String?,
-) : Locatable(location)
+) : Locatable(location), Cloneable {
+    fun toRule(): RawRule = RawRule(
+        location = this.location,
+        name = this.name,
+        patterns = this.patterns,
+        repository = this.repository
+    )
+
+    public override fun clone(): RawGrammar = RawGrammar(
+        location, repository, scopeName, patterns, injections, injectionSelector, fileTypes, name, firstLineMatch
+    )
+}
 
 // String: name
 typealias RawRepositoryMap = HashMap<String, RawRule>
