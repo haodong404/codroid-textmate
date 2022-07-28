@@ -1,7 +1,10 @@
 package org.codroid.textmate
 
 import org.codroid.textmate.grammar.*
-import org.codroid.textmate.theme.*
+import org.codroid.textmate.theme.ScopeName
+import org.codroid.textmate.theme.ScopeStack
+import org.codroid.textmate.theme.StyleAttributes
+import org.codroid.textmate.theme.Theme
 import org.codroid.textmate.utils.OnigLib
 
 /**

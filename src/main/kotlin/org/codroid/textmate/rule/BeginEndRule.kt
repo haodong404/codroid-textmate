@@ -19,7 +19,7 @@ class BeginEndRule(
 
     private val begin: RegExpSource = RegExpSource(begin, this.id)
     private val end: RegExpSource = RegExpSource(end ?: "\uFFFF", RuleId.End)
-    private val endHasBackReferences: Boolean = this.end.hasBackReferences
+    val endHasBackReferences: Boolean = this.end.hasBackReferences
     override val patterns: Array<RuleId> = patterns.patterns
     override val hasMissingPatterns: Boolean = patterns.hasMissingPatterns
     private var cachedCompiledPatterns: RegExpSourceList? = null

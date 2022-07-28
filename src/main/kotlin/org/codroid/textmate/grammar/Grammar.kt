@@ -22,9 +22,16 @@ fun createGrammar(
     balancedBracketSelectors: BalancedBracketSelectors?,
     grammarRepository: GrammarReposThemeProvider,
     onigLib: OnigLib
-): Grammar {
-    TODO()
-}
+): Grammar = Grammar(
+    scopeName,
+    grammar,
+    initialLanguage,
+    embeddedLanguages,
+    tokenTypes,
+    balancedBracketSelectors,
+    grammarRepository,
+    onigLib
+)
 
 interface GrammarReposThemeProvider : GrammarRepository, ThemeProvider
 
@@ -148,9 +155,7 @@ class Grammar(
         return this.injections!!
     }
 
-    fun getThemeProvider(): ThemeProvider {
-        TODO()
-    }
+    fun getThemeProvider(): ThemeProvider = this.grammarRepository
 
     override fun tokenizeLine(lineText: String, prevState: StateStack?, timeLimit: Int?): TokenizeLineResult {
         val result = this.tokenize(lineText, prevState, false, timeLimit ?: 0)
@@ -210,7 +215,7 @@ class Grammar(
     data class TokenizeResult(
         val lineLength: Int,
         val lineTokens: LineTokens,
-        val ruleStack: StackElementDef,
+        val ruleStack: StateStack,
         val stoppedEarly: Boolean,
     )
 
@@ -266,11 +271,29 @@ class Grammar(
 }
 
 fun nameMatcher(identifiers: List<ScopeName>, scopes: Array<ScopeName>): Boolean {
-    TODO()
+    if (scopes.size < identifiers.size) {
+        return false
+    }
+    var lastIndex = 0
+    identifiers.forEach {
+        var idx = lastIndex
+        while (idx < scopes.size) {
+            if (scopesAreMatching(scopes[idx], it)) {
+                lastIndex = idx + 1
+            } else {
+                return false
+            }
+            idx++
+        }
+    }
+    return true
 }
 
 fun scopesAreMatching(thisScopeName: String, scopeName: String): Boolean {
-    TODO()
+    if (thisScopeName.isEmpty()) return false
+    if (thisScopeName == scopeName) return true
+    val len = scopeName.length
+    return thisScopeName.length > len && thisScopeName.substring(0, len) == scopeName && thisScopeName[len] == '.'
 }
 
 data class TokenTypeMatcher(val matcher: Matcher<Array<String>>, val type: StandardTokenType)

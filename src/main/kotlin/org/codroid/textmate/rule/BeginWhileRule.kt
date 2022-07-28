@@ -17,7 +17,7 @@ class BeginWhileRule(
 ) : Rule(location, id, name, contentName), WithPatternRule {
     private val begin = RegExpSource(begin, this.id)
     private val _while = RegExpSource(_while, RuleId.While)
-    private val whileHasBackReferences = this._while.hasBackReferences
+    val whileHasBackReferences = this._while.hasBackReferences
     override val patterns = patterns.patterns
     override val hasMissingPatterns = patterns.hasMissingPatterns
     private var cachedCompiledPatterns: RegExpSourceList? = null

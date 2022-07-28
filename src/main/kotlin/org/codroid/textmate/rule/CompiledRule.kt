@@ -3,7 +3,6 @@ package org.codroid.textmate.rule
 import org.codroid.textmate.utils.FindOption
 import org.codroid.textmate.utils.OnigLib
 import org.codroid.textmate.utils.OnigString
-import java.util.LinkedList
 
 class CompiledRule(
     onigLib: OnigLib,

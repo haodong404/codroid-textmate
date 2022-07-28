@@ -19,13 +19,13 @@ class CaptureRule(
         throw TextMateException("Not supported!")
     }
 
-    override fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String?): CompiledRule {
+    override fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String): CompiledRule {
         throw TextMateException("Not supported!")
     }
 
     override fun compileAG(
         grammar: RuleRegistryOnigLib,
-        endRegexSource: String?,
+        endRegexSource: String,
         allowA: Boolean,
         allowG: Boolean
     ): CompiledRule {
