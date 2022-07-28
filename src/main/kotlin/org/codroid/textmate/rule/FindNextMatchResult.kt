@@ -1,6 +1,6 @@
 package org.codroid.textmate.rule
 
-import org.codroid.textmate.utils.OnigCaptureIndex
+import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
 data class FindNextMatchResult(val ruleId: RuleId, val captureIndices: Array<OnigCaptureIndex>) {
     override fun equals(other: Any?): Boolean {

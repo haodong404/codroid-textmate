@@ -1,4 +1,4 @@
-package org.codroid.textmate.utils
+package org.codroid.textmate.oniguruma
 
 interface OnigLib {
     fun createOnigScanner(source: Array<String>): OnigScanner
@@ -7,7 +7,23 @@ interface OnigLib {
 
 data class OnigCaptureIndex(val start: Int, val end: Int, val length: Int)
 
-data class OnigMatch(val index: Int, val captureIndices: Array<OnigCaptureIndex>)
+class OnigMatch(result: OnigResult, source: OnigString) {
+    val index: Int = result.indexInScanner
+    val captureIndices: Array<OnigCaptureIndex> = captureIndicesOfMatch(result, source);
+
+    private fun captureIndicesOfMatch(result: OnigResult, source: OnigString): Array<OnigCaptureIndex> {
+        val resultCount = result.count()
+        val captures = mutableListOf<OnigCaptureIndex>()
+        for (i in 0 until resultCount) {
+            val loc = result.locationAt(i)
+            val captureStart = source.getCharIndexOfByte(loc)
+            val captureEnd = source.getCharIndexOfByte(loc + result.lengthAt(i))
+            captures.add(OnigCaptureIndex(i, captureStart, captureEnd))
+        }
+        return captures.toTypedArray()
+    }
+
+}
 
 typealias FindOption = Byte
 
@@ -35,15 +51,6 @@ object FindOptionConsts {
     const val DebugCall: FindOption = 8
 }
 
-data class OnigScanner(
-    val findNextMatchSync: (string: OnigString, startPosition: Int, options: FindOption) -> OnigMatch?,
-    val dispose: () -> Unit?
-)
-
-data class OnigString(
-    val content: String,
-    val dispose: () -> Unit?
-)
 
 fun disposeOnigString(str: OnigString) {
     str.dispose()

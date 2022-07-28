@@ -1,7 +1,7 @@
 package org.codroid.textmate.theme
 
-import org.codroid.textmate.utils.clone
-import org.codroid.textmate.utils.strLisCmp
+import org.codroid.textmate.oniguruma.clone
+import org.codroid.textmate.oniguruma.strLisCmp
 
 class ThemeTrieElement(
     private val mainRule: ThemeTrieElementRule,

@@ -6,7 +6,7 @@ import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
 import org.codroid.textmate.rule.BeginWhileRule
 import org.codroid.textmate.rule.RuleId
-import org.codroid.textmate.utils.OnigString
+import org.codroid.textmate.oniguruma.OnigString
 
 /**
  * Walk the stack from bottom to top, and check each while condition in this order.

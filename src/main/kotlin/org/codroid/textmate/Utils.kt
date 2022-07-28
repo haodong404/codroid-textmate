@@ -1,4 +1,4 @@
-package org.codroid.textmate.utils
+package org.codroid.textmate.oniguruma
 
 fun basename(path: String): String {
     return when (val idx = path.lastIndexOf('/').inv() or path.lastIndexOf('\\').inv()) {

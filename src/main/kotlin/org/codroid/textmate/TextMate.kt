@@ -1,11 +1,10 @@
 package org.codroid.textmate
 
-import org.codroid.textmate.grammar.RawGrammar
-import org.codroid.textmate.grammar.StateStack
+import org.codroid.textmate.grammar.*
 import org.codroid.textmate.theme.RawTheme
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.Theme
-import org.codroid.textmate.utils.OnigLib
+import org.codroid.textmate.oniguruma.OnigLib
 
 /**
  * This file is equivalent to main.ts in vscode-textmate.
@@ -15,15 +14,13 @@ import org.codroid.textmate.utils.OnigLib
 
 typealias EmbeddedLanguagesMap = HashMap<ScopeName, Int>
 
-interface RegistryOptions {
-    val onigLib: OnigLib
-    val theme: RawTheme?
-    val colorMap: Array<String>
-
-    suspend fun loadGrammar(scopeName: ScopeName): RawGrammar?
-
-    fun getInjections(scopeName: ScopeName): Array<ScopeName>?
-}
+data class RegistryOptions(
+    val onigLib: OnigLib,
+    val theme: RawTheme? = null,
+    val colorMap: Array<String>? = null,
+    val loadGrammar: (suspend (scopeName: ScopeName) -> RawGrammar?)? = null,
+    val getInjections: ((scopeName: ScopeName) -> Array<ScopeName>?)? = null
+)
 
 
 /**
@@ -51,10 +48,10 @@ interface Tokenizer {
 }
 
 data class GrammarConfiguration(
-    val embeddedLanguages: EmbeddedLanguagesMap?,
-    val tokenTypes: TokenTypeMap?,
-    val balancedBracketSelectors: Array<String>,
-    val unbalancedBracketSelectors: Array<String>
+    val embeddedLanguages: EmbeddedLanguagesMap? = null,
+    val tokenTypes: TokenTypeMap? = null,
+    val balancedBracketSelectors: Array<String>? = null,
+    val unbalancedBracketSelectors: Array<String>? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -79,8 +76,134 @@ data class GrammarConfiguration(
     }
 }
 
+/**
+ * The registry that will hold all grammars.
+ */
 class Registry(val options: RegistryOptions) {
     private val syncRegistry: SyncRegistry = SyncRegistry(
         Theme.createFromRawTheme(options.theme, options.colorMap), options.onigLib
     )
+
+    private val ensureGrammarCache = HashMap<String, Boolean>()
+
+    fun dispose() {
+        this.syncRegistry.dispose()
+    }
+
+    /**
+     * Change the theme. Once called, no previous `ruleStack` should be used anymore.
+     */
+    fun setTheme(theme: RawTheme, colorMap: Array<String>?) {
+        this.syncRegistry.theme = Theme.createFromRawTheme(theme, colorMap)
+    }
+
+    /**
+     * Returns a lookup array for color ids.
+     */
+    fun getColorMap(): Map<UInt, String> = this.syncRegistry.getColorMap()
+
+    /**
+     * Load the grammar for `scopeName` and all referenced included grammars asynchronously.
+     * Please do not use language id 0.
+     */
+    suspend fun loadGrammarWithEmbeddedLanguages(
+        initialScopeName: ScopeName, initialLanguage: Int, embeddedLanguages: EmbeddedLanguagesMap
+    ): Tokenizer =
+        this.loadGrammarWithConfiguration(initialScopeName, initialLanguage, GrammarConfiguration(embeddedLanguages))
+
+    /**
+     * Load the grammar for `scopeName` and all referenced included grammars asynchronously.
+     * Please do not use language id 0.
+     */
+    suspend fun loadGrammarWithConfiguration(
+        initialScopeName: ScopeName, initialLanguage: Int, configuration: GrammarConfiguration
+    ): Tokenizer = this.loadGrammar(
+        initialScopeName,
+        initialLanguage,
+        configuration.embeddedLanguages,
+        configuration.tokenTypes,
+        BalancedBracketSelectors(
+            configuration.balancedBracketSelectors ?: emptyArray(),
+            configuration.unbalancedBracketSelectors ?: emptyArray()
+        )
+    )
+
+    /**
+     * Load the grammar for `scopeName` and all referenced included grammars asynchronously.
+     */
+    suspend fun loadGrammar(initialScopeName: ScopeName): Tokenizer =
+        this.loadGrammar(initialScopeName, 0, null, null, null)
+
+    private suspend fun loadGrammar(
+        initialScopeName: ScopeName,
+        initialLanguage: Int,
+        embeddedLanguages: EmbeddedLanguagesMap?,
+        tokenTypes: TokenTypeMap?,
+        balancedBracketSelectors: BalancedBracketSelectors?
+    ): Tokenizer {
+        val dependencyProcessor = ScopeDependencyProcessor(this.syncRegistry, initialScopeName)
+        while (dependencyProcessor.qq.size > 0) {
+            dependencyProcessor.qq.forEach {
+                this.loadSingleGrammar(it.scopeName)
+            }
+            dependencyProcessor.processQueue()
+        }
+        return grammarForScopeName(
+            initialScopeName,
+            initialLanguage,
+            embeddedLanguages,
+            tokenTypes,
+            balancedBracketSelectors
+        )!!
+    }
+
+    private suspend fun loadSingleGrammar(scopeName: ScopeName): Boolean {
+        if (!this.ensureGrammarCache.containsKey(scopeName)) {
+            this.ensureGrammarCache[scopeName] = this.doLoadSingleGrammar(scopeName)
+        }
+        return this.ensureGrammarCache[scopeName] ?: false
+    }
+
+    private suspend fun doLoadSingleGrammar(scopeName: ScopeName): Boolean {
+        val grammar = this.options.loadGrammar?.let { it(scopeName) }
+        if (grammar != null) {
+            val injections = if (this.options.getInjections != null) {
+                this.options.getInjections.invoke(scopeName)
+            } else {
+                null
+            }
+            this.syncRegistry.addGrammar(grammar, injections)
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Adds a rawGrammar.
+     */
+    suspend fun addGrammar(
+        rawGrammar: RawGrammar,
+        injections: Array<String> = emptyArray(),
+        initialLanguage: Int = 0,
+        embeddedLanguages: EmbeddedLanguagesMap? = null
+    ): Tokenizer {
+        this.syncRegistry.addGrammar(rawGrammar, injections)
+        return this.grammarForScopeName(rawGrammar.scopeName, initialLanguage, embeddedLanguages)!!
+    }
+
+    /**
+     * Get the grammar for `scopeName`. The grammar must first be created via `loadGrammar` or `addGrammar`.
+     */
+    private suspend fun grammarForScopeName(
+        scopeName: String,
+        initialLanguage: Int = 0,
+        embeddedLanguages: EmbeddedLanguagesMap? = null,
+        tokenTypes: TokenTypeMap? = null,
+        balancedBracketSelectors: BalancedBracketSelectors? = null
+    ): Tokenizer? {
+        return this.syncRegistry.grammarForScopeName(
+            scopeName, initialLanguage, embeddedLanguages, tokenTypes, balancedBracketSelectors
+        )
+    }
+
 }

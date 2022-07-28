@@ -1,6 +1,6 @@
 package org.codroid.textmate.theme
 
-import org.codroid.textmate.utils.*
+import org.codroid.textmate.oniguruma.*
 import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or

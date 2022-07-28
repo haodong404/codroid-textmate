@@ -1,6 +1,6 @@
 import org.codroid.textmate.theme.*
-import org.codroid.textmate.utils.strArrCmp
-import org.codroid.textmate.utils.strcmp
+import org.codroid.textmate.oniguruma.strArrCmp
+import org.codroid.textmate.oniguruma.strcmp
 import kotlin.experimental.or
 import kotlin.test.Test
 import kotlin.test.assertContentEquals

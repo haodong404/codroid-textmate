@@ -8,10 +8,10 @@ import org.codroid.textmate.rule.RuleFactoryHelper
 import org.codroid.textmate.rule.RuleId
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.ThemeProvider
-import org.codroid.textmate.utils.OnigLib
-import org.codroid.textmate.utils.OnigScanner
-import org.codroid.textmate.utils.OnigString
-import org.codroid.textmate.utils.disposeOnigString
+import org.codroid.textmate.oniguruma.OnigLib
+import org.codroid.textmate.oniguruma.OnigScanner
+import org.codroid.textmate.oniguruma.OnigString
+import org.codroid.textmate.oniguruma.disposeOnigString
 
 fun createGrammar(
     scopeName: ScopeName,

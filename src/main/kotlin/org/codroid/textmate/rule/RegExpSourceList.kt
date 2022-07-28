@@ -1,6 +1,6 @@
 package org.codroid.textmate.rule
 
-import org.codroid.textmate.utils.OnigLib
+import org.codroid.textmate.oniguruma.OnigLib
 
 class RegExpSourceList(
     val items: MutableList<RegExpSource> = mutableListOf(),

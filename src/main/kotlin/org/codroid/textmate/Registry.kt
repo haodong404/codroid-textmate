@@ -5,7 +5,7 @@ import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.ScopeStack
 import org.codroid.textmate.theme.StyleAttributes
 import org.codroid.textmate.theme.Theme
-import org.codroid.textmate.utils.OnigLib
+import org.codroid.textmate.oniguruma.OnigLib
 
 /**
  * SyncRegistry

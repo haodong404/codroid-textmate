@@ -4,7 +4,7 @@ import org.codroid.textmate.DebugFlag
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.utils.OnigString
+import org.codroid.textmate.oniguruma.OnigString
 import org.codroid.textmate.rule.BeginEndRule
 import org.codroid.textmate.rule.BeginWhileRule
 import org.codroid.textmate.rule.MatchRule

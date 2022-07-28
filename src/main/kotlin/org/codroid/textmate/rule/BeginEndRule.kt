@@ -1,7 +1,7 @@
 package org.codroid.textmate.rule
 
 import org.codroid.textmate.grammar.Location
-import org.codroid.textmate.utils.OnigCaptureIndex
+import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
 class BeginEndRule(
     override val location: Location?,

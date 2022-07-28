@@ -8,7 +8,7 @@ import org.codroid.textmate.grammar.Injection
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
 import org.codroid.textmate.rule.*
-import org.codroid.textmate.utils.*
+import org.codroid.textmate.oniguruma.*
 import kotlin.experimental.or
 import kotlin.math.min
 

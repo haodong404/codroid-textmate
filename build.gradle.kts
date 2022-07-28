@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jruby.joni:joni:2.1.43")
     testImplementation(kotlin("test"))
 }
 

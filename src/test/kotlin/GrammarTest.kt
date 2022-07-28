@@ -1,7 +1,12 @@
 import org.codroid.textmate.*
 import org.codroid.textmate.EncodedTokenAttributes.set
+import org.codroid.textmate.grammar.RawGrammar
+import org.codroid.textmate.oniguruma.OnigLib
+import org.codroid.textmate.oniguruma.OnigScanner
+import org.codroid.textmate.oniguruma.OnigString
 import org.codroid.textmate.theme.FontStyle
 import org.codroid.textmate.theme.FontStyleConsts
+import org.codroid.textmate.theme.ScopeName
 import kotlin.experimental.or
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -378,6 +383,16 @@ class GrammarTest {
 
     @Test
     fun `Shadowed rules are resolved correctly`() {
-        TODO()
+        val registry = Registry(RegistryOptions(onigLib = object : OnigLib {
+            override fun createOnigScanner(source: Array<String>): OnigScanner {
+                return OnigScanner(source)
+            }
+
+            override fun createOnigString(str: String): OnigString {
+                return OnigString.create(str)
+            }
+        }))
+
+        val grammar = registry
     }
 }

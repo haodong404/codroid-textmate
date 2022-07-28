@@ -4,8 +4,8 @@ import org.codroid.textmate.EmbeddedLanguagesMap
 import org.codroid.textmate.OptionalStandardTokenType
 import org.codroid.textmate.OptionalStandardTokenTypeConsts
 import org.codroid.textmate.theme.ScopeName
-import org.codroid.textmate.utils.CachedFn
-import org.codroid.textmate.utils.escapeRegExpCharacters
+import org.codroid.textmate.oniguruma.CachedFn
+import org.codroid.textmate.oniguruma.escapeRegExpCharacters
 
 data class BasicScopeAttributes(val languageId: Int, val tokenType: OptionalStandardTokenType)
 

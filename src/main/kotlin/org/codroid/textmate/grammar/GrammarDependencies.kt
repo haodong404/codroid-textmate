@@ -47,7 +47,7 @@ class ScopeDependencyProcessor(
 ) {
     private val seenFullScopeRequests = mutableSetOf<ScopeName>()
     private val seenPartialScopeRequests = mutableListOf<ScopeName>()
-    private var qq: MutableList<AbsoluteRuleReference>
+    var qq: MutableList<AbsoluteRuleReference>
 
     init {
         seenFullScopeRequests.add(initialScopeName)
