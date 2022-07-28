@@ -12,27 +12,27 @@ data class OnigMatch(val index: Int, val captureIndices: Array<OnigCaptureIndex>
 typealias FindOption = Byte
 
 object FindOptionConsts {
-    const val None = 0
+    const val None: FindOption = 0
 
     /**
      * equivalent of ONIG_OPTION_NOT_BEGIN_STRING: (str) isn't considered as begin of string (* fail \A)
      */
-    const val NotBeginString = 1
+    const val NotBeginString: FindOption = 1
 
     /**
      * equivalent of ONIG_OPTION_NOT_END_STRING: (end) isn't considered as end of string (* fail \z, \Z)
      */
-    const val NotEndString = 2
+    const val NotEndString: FindOption = 2
 
     /**
      * equivalent of ONIG_OPTION_NOT_BEGIN_POSITION: (start) isn't considered as start position of search (* fail \G)
      */
-    const val NotBeginPosition = 4
+    const val NotBeginPosition: FindOption = 4
 
     /**
      * used for debugging purposes.
      */
-    const val DebugCall = 8
+    const val DebugCall: FindOption = 8
 }
 
 data class OnigScanner(
