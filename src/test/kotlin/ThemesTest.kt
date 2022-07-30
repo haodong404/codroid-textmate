@@ -1,10 +1,27 @@
+import org.codroid.textmate.Registry
 import org.codroid.textmate.theme.*
-import org.codroid.textmate.oniguruma.strArrCmp
-import org.codroid.textmate.oniguruma.strcmp
+import org.codroid.textmate.strArrCmp
+import org.codroid.textmate.strcmp
+import java.nio.file.Paths
 import kotlin.experimental.or
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+
+data class ThemeData(val themeName: String, val theme: RawTheme, val registry: Registry)
+
+val ThemesUri = {}.javaClass.getResource("themes")
+
+class ThemeInfo(private val themeName: String, private val fileName: String, private val includeFilename: String?) {
+
+    companion object {
+        fun loadThemeFile(fileName: String): RawTheme {
+            val fullPath = Paths.get("")
+            TODO()
+        }
+    }
+
+}
 
 class ThemesTest {
     @Test

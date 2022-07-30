@@ -1,7 +1,7 @@
 package org.codroid.textmate.rule
 
+import org.codroid.textmate.escapeRegExpCharacters
 import org.codroid.textmate.oniguruma.OnigCaptureIndex
-import org.codroid.textmate.oniguruma.escapeRegExpCharacters
 
 class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
     var source: String = ""

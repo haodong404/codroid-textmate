@@ -1,7 +1,7 @@
 package org.codroid.textmate.theme
 
 data class Setting(
-    val fontStyle: String? = null, var foreground: String? = null, var background: String? = null
+    var fontStyle: String? = null, var foreground: String? = null, var background: String? = null
 ) {
     override fun equals(other: Any?): Boolean {
         other?.let {
@@ -22,10 +22,10 @@ data class Setting(
 }
 
 data class RawThemeSetting(
-    val name: String? = null,
-    val scopes: Array<ScopePattern>? = null,
-    val scope: ScopePattern? = null,
-    val settings: Setting
+    var name: String? = null,
+    var scopes: Array<ScopePattern>? = null,
+    var scope: ScopePattern? = null,
+    var settings: Setting? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

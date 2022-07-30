@@ -1,4 +1,12 @@
-package org.codroid.textmate.oniguruma
+package org.codroid.textmate
+
+import com.dd.plist.PropertyListParser
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.*
+import org.codroid.textmate.grammar.RawCaptures
+import org.codroid.textmate.grammar.RawRepository
+import org.codroid.textmate.oniguruma.OnigCaptureIndex
+import java.io.InputStream
 
 fun basename(path: String): String {
     return when (val idx = path.lastIndexOf('/').inv() or path.lastIndexOf('\\').inv()) {
@@ -130,4 +138,40 @@ fun Byte.toBoolean(): Boolean {
         0.toByte() -> false
         else -> true
     }
+}
+
+object RawCapturesMapSerializer : JsonTransformingSerializer<RawCaptures>(RawCaptures.serializer()) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return dynamicMap(element)
+    }
+}
+
+object RawRepositorySerializer : JsonTransformingSerializer<RawRepository>(RawRepository.serializer()) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return dynamicMap(element)
+    }
+}
+
+private fun dynamicMap(element: JsonElement): JsonElement {
+    if (element is JsonObject) {
+        return JsonObject(
+            mapOf(Pair("map", element))
+        )
+    }
+    return element
+}
+
+inline fun <reified T> parsePLIST(input: InputStream): T {
+    return PropertyListParser.parse(input).toJavaObject(T::class.java)
+}
+
+val json = Json {
+    ignoreUnknownKeys = true
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> parseJson(input: InputStream): T {
+    return Json {
+        ignoreUnknownKeys = true
+    }.decodeFromStream(input)
 }

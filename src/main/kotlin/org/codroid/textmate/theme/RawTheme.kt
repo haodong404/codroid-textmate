@@ -1,6 +1,6 @@
 package org.codroid.textmate.theme
 
-data class RawTheme(val name: String? = null, val settings: Array<RawThemeSetting>) {
+data class RawTheme(var name: String? = null, var settings: Array<RawThemeSetting>? = null) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

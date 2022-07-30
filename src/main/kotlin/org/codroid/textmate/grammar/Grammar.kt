@@ -2,13 +2,13 @@ package org.codroid.textmate.grammar
 
 import org.codroid.textmate.*
 import org.codroid.textmate.grammar.tokenize.tokenizeString
-import org.codroid.textmate.theme.ScopeName
-import org.codroid.textmate.theme.ThemeProvider
 import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.oniguruma.OnigScanner
 import org.codroid.textmate.oniguruma.OnigString
 import org.codroid.textmate.oniguruma.disposeOnigString
 import org.codroid.textmate.rule.*
+import org.codroid.textmate.theme.ScopeName
+import org.codroid.textmate.theme.ThemeProvider
 
 fun createGrammar(
     scopeName: ScopeName,

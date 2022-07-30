@@ -1,13 +1,15 @@
 package org.codroid.textmate.rule
 
+import kotlinx.serialization.Serializable
+import org.codroid.textmate.RegexSource
+import org.codroid.textmate.basename
 import org.codroid.textmate.grammar.Location
 import org.codroid.textmate.oniguruma.OnigCaptureIndex
-import org.codroid.textmate.oniguruma.RegexSource
-import org.codroid.textmate.oniguruma.basename
 
 val HAS_BACK_REFERENCES = Regex("""\\(\d+)""")
 val BACK_REFERENCING_END = Regex("""\\(\d+)""")
 
+@Serializable
 class RuleId(var id: Int) : Cloneable {
     companion object {
         val End = RuleId(-1)

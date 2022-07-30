@@ -1,10 +1,13 @@
 package org.codroid.textmate
 
-import org.codroid.textmate.grammar.*
+import org.codroid.textmate.grammar.BalancedBracketSelectors
+import org.codroid.textmate.grammar.RawGrammar
+import org.codroid.textmate.grammar.ScopeDependencyProcessor
+import org.codroid.textmate.grammar.StateStack
+import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.theme.RawTheme
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.Theme
-import org.codroid.textmate.oniguruma.OnigLib
 
 /**
  * This file is equivalent to main.ts in vscode-textmate.

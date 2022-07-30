@@ -1,6 +1,6 @@
 package org.codroid.textmate.theme
 
-import org.codroid.textmate.oniguruma.*
+import org.codroid.textmate.*
 import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -120,59 +120,61 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
     if (source == null) return mutableListOf()
     val settings = source.settings
     val result = mutableListOf<ParsedThemeRule>()
-    for ((idx, setting) in settings.withIndex()) {
-        val scopes = mutableListOf<String>()
-        if (setting.scope != null) {
-            val scope = StringBuilder(setting.scope.trim())
-            if (scope.startsWith(',')) {   // remove leading commas
-                scope.deleteAt(0)
+    if (settings != null) {
+        for ((idx, setting) in settings.withIndex()) {
+            val scopes = mutableListOf<String>()
+            if (setting.scope != null) {
+                val scope = StringBuilder(setting.scope!!.trim())
+                if (scope.startsWith(',')) {   // remove leading commas
+                    scope.deleteAt(0)
+                }
+                if (scope.endsWith(',')) {  // remove trailing commas
+                    scope.deleteAt(scope.length - 1)
+                }
+                scopes.addAll(scope.split(','))
+            } else if (setting.scopes != null) {
+                scopes.addAll(setting.scopes!!)
+            } else {
+                scopes.add("")
             }
-            if (scope.endsWith(',')) {  // remove trailing commas
-                scope.deleteAt(scope.length - 1)
-            }
-            scopes.addAll(scope.split(','))
-        } else if (setting.scopes != null) {
-            scopes.addAll(setting.scopes)
-        } else {
-            scopes.add("")
-        }
 
-        var fontStyle = FontStyleConsts.NotSet
-        setting.settings.fontStyle?.let {
-            fontStyle = FontStyleConsts.None
-            val segments = setting.settings.fontStyle.split(' ')
-            for (seg in segments) {
-                when (seg) {
-                    "italic" -> fontStyle = fontStyle or FontStyleConsts.Italic
-                    "bold" -> fontStyle = fontStyle or FontStyleConsts.Bold
-                    "underline" -> fontStyle = fontStyle or FontStyleConsts.Underline
-                    "strikethrough" -> fontStyle = fontStyle or FontStyleConsts.Strikethrough
+            var fontStyle = FontStyleConsts.NotSet
+            setting.settings?.fontStyle?.let {
+                fontStyle = FontStyleConsts.None
+                val segments = setting.settings!!.fontStyle!!.split(' ')
+                for (seg in segments) {
+                    when (seg) {
+                        "italic" -> fontStyle = fontStyle or FontStyleConsts.Italic
+                        "bold" -> fontStyle = fontStyle or FontStyleConsts.Bold
+                        "underline" -> fontStyle = fontStyle or FontStyleConsts.Underline
+                        "strikethrough" -> fontStyle = fontStyle or FontStyleConsts.Strikethrough
+                    }
                 }
             }
-        }
-        var foreground: String? = null
-        if (isValidHexColor(setting.settings.foreground ?: "")) {
-            foreground = setting.settings.foreground
-        }
-        var background: String? = null
-        if (isValidHexColor(setting.settings.background ?: "")) {
-            background = setting.settings.background
-        }
-
-        for (item in scopes) {
-            val scopeNow = item.trim()
-            val segments = scopeNow.split(" ")
-
-            val scope = segments[segments.size - 1]
-            var parentScopes: List<ScopeName>? = null
-            if (segments.size > 1) {
-                parentScopes = segments.slice(0 until (segments.size - 1)).reversed()
+            var foreground: String? = null
+            if (isValidHexColor(setting.settings?.foreground ?: "")) {
+                foreground = setting.settings?.foreground
             }
-            result.add(
-                ParsedThemeRule(
-                    scope, parentScopes, idx, fontStyle, foreground, background
+            var background: String? = null
+            if (isValidHexColor(setting.settings?.background ?: "")) {
+                background = setting.settings?.background
+            }
+
+            for (item in scopes) {
+                val scopeNow = item.trim()
+                val segments = scopeNow.split(" ")
+
+                val scope = segments[segments.size - 1]
+                var parentScopes: List<ScopeName>? = null
+                if (segments.size > 1) {
+                    parentScopes = segments.slice(0 until (segments.size - 1)).reversed()
+                }
+                result.add(
+                    ParsedThemeRule(
+                        scope, parentScopes, idx, fontStyle, foreground, background
+                    )
                 )
-            )
+            }
         }
     }
     return result
