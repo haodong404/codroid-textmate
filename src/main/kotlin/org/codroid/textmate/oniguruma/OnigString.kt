@@ -7,7 +7,9 @@ import java.util.*
 abstract class OnigString(
     open val content: String, open val bytesUTF8: ByteArray
 ) {
-    val bytesCount = bytesUTF8.size
+    val bytesCount by lazy {
+        bytesUTF8.size
+    }
 
     companion object {
         fun create(string: String): OnigString {
@@ -126,7 +128,7 @@ class SingleByteString(
     }
 
     override fun dispose() {
-        TODO("Not yet implemented")
+
     }
 
 }

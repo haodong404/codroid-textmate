@@ -30,15 +30,14 @@ object RuleFactory {
                         repository.map = RawRepositoryMap(desc.repository.map?.plus(repository.map!!))
                         if (desc.repository.location != null) repository.location = desc.repository.location
                     }
-                    desc.patterns.let { patterns ->
-                        if (patterns == null && desc.include != null) {
-                            desc.patterns = arrayOf(RawRule(include = desc.include))
-                        }
-                        return@registerRule IncludeOnlyRule(
-                            desc.location, desc.id!!, desc.name, desc.contentName,
-                            compilePatterns(patterns, helper, repository)
-                        )
+                    var patterns = desc.patterns
+                    if (patterns == null && desc.include != null) {
+                        patterns = arrayOf(RawRule(include = desc.include))
                     }
+                    return@registerRule IncludeOnlyRule(
+                        desc.location, desc.id!!, desc.name, desc.contentName,
+                        compilePatterns(patterns, helper, repository)
+                    )
                 }
 
                 if (desc.while_ != null) {
@@ -53,7 +52,7 @@ object RuleFactory {
                     desc.location, desc.id!!, desc.name, desc.contentName,
                     desc.begin, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
                     desc.end, compileCaptures(desc.endCaptures ?: desc.captures, helper, repository),
-                    desc.applyEndPatternLast!!, compilePatterns(desc.patterns, helper, repository)
+                    desc.applyEndPatternLast ?: false, compilePatterns(desc.patterns, helper, repository)
                 )
             }
         }
@@ -113,7 +112,7 @@ object RuleFactory {
         val result = mutableListOf<RuleId>()
 
         if (patterns != null) {
-            for ((idx, pattern) in patterns.withIndex()) {
+            for (pattern in patterns) {
                 var ruleId = RuleId.End
                 if (pattern.include != null) {
                     val reference = parseInclude(pattern.include)
@@ -124,12 +123,14 @@ object RuleFactory {
                             helper,
                             repository
                         )
+
                         is RelativeReference -> {
                             // Local include found in `repository`
                             repository.map?.get(reference.ruleName)?.let {
                                 ruleId = getCompiledRuleId(it, helper, repository)
                             }
                         }
+
                         is TopLevelReference -> {}
                         is TopLevelRepositoryReference -> {
                             val externalGrammarName = reference.scopeName
@@ -148,7 +149,7 @@ object RuleFactory {
                     ruleId = getCompiledRuleId(pattern, helper, repository)
                 }
 
-                if (ruleId == RuleId.End) {
+                if (ruleId != RuleId.End) {
                     val rule = helper.getRule(ruleId)
                     var skipRule = false
                     if (rule is WithPatternRule) {

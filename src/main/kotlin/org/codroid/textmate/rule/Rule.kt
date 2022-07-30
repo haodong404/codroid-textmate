@@ -8,7 +8,7 @@ import org.codroid.textmate.oniguruma.basename
 val HAS_BACK_REFERENCES = Regex("""\\(\d+)""")
 val BACK_REFERENCING_END = Regex("""\\(\d+)""")
 
-class RuleId(var id: Int) {
+class RuleId(var id: Int) : Cloneable {
     companion object {
         val End = RuleId(-1)
         val While = RuleId(-2)
@@ -32,6 +32,9 @@ class RuleId(var id: Int) {
         return this
     }
 
+    public override fun clone(): RuleId {
+        return RuleId.from(this.id)
+    }
 }
 
 interface WithPatternRule {

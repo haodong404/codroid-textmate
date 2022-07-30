@@ -54,7 +54,7 @@ class StateStack(
         val Null = StateStack(
             null,
             RuleId.from(0),
-            0, 0, false, null, null!!, null!!
+            0, 0, false, null, AttributedScopeStack.createRoot("", 0u), AttributedScopeStack.createRoot("", 0u)
         )
     }
 

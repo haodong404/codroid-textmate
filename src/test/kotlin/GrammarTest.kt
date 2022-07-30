@@ -1,6 +1,11 @@
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.codroid.textmate.*
 import org.codroid.textmate.EncodedTokenAttributes.set
 import org.codroid.textmate.grammar.RawGrammar
+import org.codroid.textmate.grammar.RawRepository
+import org.codroid.textmate.grammar.RawRepositoryMap
+import org.codroid.textmate.grammar.RawRule
 import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.oniguruma.OnigScanner
 import org.codroid.textmate.oniguruma.OnigString
@@ -9,6 +14,7 @@ import org.codroid.textmate.theme.FontStyleConsts
 import org.codroid.textmate.theme.ScopeName
 import kotlin.experimental.or
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 
@@ -381,8 +387,9 @@ class GrammarTest {
         )
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `Shadowed rules are resolved correctly`() {
+    fun `Shadowed rules are resolved correctly`() = runTest {
         val registry = Registry(RegistryOptions(onigLib = object : OnigLib {
             override fun createOnigScanner(source: Array<String>): OnigScanner {
                 return OnigScanner(source)
@@ -393,6 +400,46 @@ class GrammarTest {
             }
         }))
 
-        val grammar = registry
+        val grammar = registry.addGrammar(
+            rawGrammar = RawGrammar(
+                scopeName = "source.test",
+                repository = RawRepository(
+                    map = RawRepositoryMap().apply {
+                        this["foo"] = RawRule(
+                            include = "#bar"
+                        )
+                        this["bar"] = RawRule(match = "bar1", name = "outer")
+                    }
+                ), patterns = arrayOf(
+                    // When you move this up, the test passes
+                    RawRule(
+                        begin = "begin",
+                        patterns = arrayOf(RawRule(include = "#foo")),
+                        end = "end"
+                    ),
+                    RawRule(
+                        patterns = arrayOf(RawRule(include = "#foo")),
+                        repository = RawRepository(
+                            map = RawRepositoryMap().apply {
+                                this["bar"] = RawRule(
+                                    match = "bar1",
+                                    name = "inner"
+                                )
+                            }
+                        )
+                    )
+
+                )
+            )
+        )
+        val result = grammar.tokenizeLine("bar1", null, 0)
+        assertContentEquals(
+            arrayOf(
+                Token(
+                    startIndex = 0, endIndex = 4, scopes = arrayOf("source.test", "outer")
+                )
+            ), result.tokens
+        )
+
     }
 }

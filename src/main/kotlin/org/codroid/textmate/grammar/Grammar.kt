@@ -2,16 +2,13 @@ package org.codroid.textmate.grammar
 
 import org.codroid.textmate.*
 import org.codroid.textmate.grammar.tokenize.tokenizeString
-import org.codroid.textmate.rule.Rule
-import org.codroid.textmate.rule.RuleFactory
-import org.codroid.textmate.rule.RuleFactoryHelper
-import org.codroid.textmate.rule.RuleId
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.ThemeProvider
 import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.oniguruma.OnigScanner
 import org.codroid.textmate.oniguruma.OnigString
 import org.codroid.textmate.oniguruma.disposeOnigString
+import org.codroid.textmate.rule.*
 
 fun createGrammar(
     scopeName: ScopeName,
@@ -61,11 +58,11 @@ class Grammar(
     private val balancedBracketSelectors: BalancedBracketSelectors?,
     private val grammarRepository: GrammarReposThemeProvider,
     private val onigLib: OnigLib
-) : Tokenizer, RuleFactoryHelper, OnigLib {
+) : Tokenizer, RuleFactoryHelper, OnigLib, RuleRegistryOnigLib {
 
     private var rootId = RuleId.End
     private var lastRuleId = RuleId.from(0)
-    private val ruleId2Desc = mutableListOf<Rule?>()
+    private val ruleId2Desc = mutableMapOf<Int, Rule?>()
     private val includedGrammars = mutableMapOf<ScopeName, RawGrammar>()
     private val grammar = initGrammar(grammar, null)
     private var injections: Array<Injection>? = null
@@ -179,7 +176,7 @@ class Grammar(
     override fun getRule(ruleId: RuleId): Rule = this.ruleId2Desc[ruleId.id]!!
     override fun <T : Rule> registerRule(factor: (id: RuleId) -> T): T {
         this.lastRuleId++
-        val id = this.lastRuleId
+        val id = this.lastRuleId.clone()
         val result = factor(id)
         this.ruleId2Desc[id.id] = result
         return result

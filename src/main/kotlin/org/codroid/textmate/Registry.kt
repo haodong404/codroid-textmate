@@ -32,7 +32,10 @@ class SyncRegistry(
      * Add `grammar` to registry and return a list of referenced scope names
      */
     fun addGrammar(grammar: RawGrammar, injectionScopeName: Array<ScopeName>?) {
-        TODO()
+        this.rawGrammars[grammar.scopeName] = grammar
+        if (injectionScopeName != null) {
+            this.injectionGrammars[grammar.scopeName] = injectionScopeName
+        }
     }
 
     /**

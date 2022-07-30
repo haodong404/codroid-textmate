@@ -205,7 +205,7 @@ object RuleMatching {
         allowA: Boolean,
         allowG: Boolean
     ): PrepareRuleResult {
-        val runScanner = rule.compileAG(grammar as RuleRegistryOnigLib, endRegexSource ?: "", allowA, allowG)
+        val runScanner = rule.compileAG(grammar, endRegexSource ?: "", allowA, allowG)
         return PrepareRuleResult(runScanner, FindOptionConsts.None)
     }
 
@@ -217,11 +217,11 @@ object RuleMatching {
         allowG: Boolean
     ): PrepareRuleResult {
         if (UseOnigurumaFindOptions) {
-            val ruleScanner = rule.compile(grammar as RuleRegistryOnigLib, endRegexSource ?: "")
+            val ruleScanner = rule.compile(grammar, endRegexSource ?: "")
             val findOptions = getFindOptions(allowA, allowG)
             return PrepareRuleResult(ruleScanner, findOptions)
         }
-        val ruleScanner = rule.compileAG(grammar as RuleRegistryOnigLib, endRegexSource ?: "", allowA, allowG)
+        val ruleScanner = rule.compileAG(grammar, endRegexSource ?: "", allowA, allowG)
         return PrepareRuleResult(ruleScanner, FindOptionConsts.None)
     }
 

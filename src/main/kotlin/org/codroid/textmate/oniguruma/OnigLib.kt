@@ -5,7 +5,9 @@ interface OnigLib {
     fun createOnigString(str: String): OnigString
 }
 
-data class OnigCaptureIndex(val start: Int, val end: Int, val length: Int)
+data class OnigCaptureIndex(val index: Int, val start: Int, val end: Int) {
+    val length = this.end - this.start
+}
 
 class OnigMatch(result: OnigResult, source: OnigString) {
     val index: Int = result.indexInScanner

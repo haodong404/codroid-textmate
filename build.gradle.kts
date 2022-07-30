@@ -15,6 +15,7 @@ repositories {
 dependencies {
     implementation("org.jruby.joni:joni:2.1.43")
     testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
 }
 
 tasks.test {

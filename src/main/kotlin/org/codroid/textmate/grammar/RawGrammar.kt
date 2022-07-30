@@ -14,11 +14,11 @@ data class RawGrammar(
     val scopeName: ScopeName,
     val patterns: Array<RawRule>,
     val injections: HashMap<String, RawRule>? = null,
-    val injectionSelector: String?,
+    val injectionSelector: String? = null,
 
-    val fileTypes: Array<String>?,
-    val name: String,
-    val firstLineMatch: String?,
+    val fileTypes: Array<String>? = null,
+    val name: String? = null,
+    val firstLineMatch: String? = null,
 ) : Locatable(location), Cloneable {
     fun toRule(): RawRule = RawRule(
         location = this.location,
