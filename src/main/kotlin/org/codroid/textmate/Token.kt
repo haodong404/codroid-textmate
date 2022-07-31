@@ -2,6 +2,8 @@
 
 package org.codroid.textmate
 
+import org.codroid.textmate.grammar.StateStack
+
 data class Token(
     var startIndex: Int, val endIndex: Int, val scopes: Array<String>
 ) {
@@ -31,7 +33,7 @@ data class TokenizeLineResult(
     /**
      * The `prevState` to be passed on to the next line tokenization.
      */
-    val ruleStack: StackElementDef,
+    val ruleStack: StateStack,
     /**
      * Did tokenization stop early due to reaching the time limit.
      */
@@ -69,7 +71,7 @@ data class TokenizeLineResult2(
     /**
      * The `prevState` to be passed on to the next line tokenization.
      */
-    val ruleStack: StackElementDef,
+    val ruleStack: StateStack,
     /**
      * Did tokenization stop early due to reaching the time limit.
      */

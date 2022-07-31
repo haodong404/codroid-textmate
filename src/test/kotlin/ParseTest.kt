@@ -58,14 +58,14 @@ class ParseTest {
             val syntax = parseJson<RawGrammar>(input)
             assertEquals("C++", syntax.name)
             assertEquals("source.cpp", syntax.scopeName)
-            assertEquals("meta.block.cpp", syntax.repository.map!!["block"]!!.name)
+            assertEquals("meta.block.cpp", syntax.repository!!.map!!["block"]!!.name)
             assertEquals(
                 "support.function.any-method.c",
-                syntax.repository.map?.get("block")?.patterns?.getOrNull(0)?.captures?.map?.get("1")?.name
+                syntax.repository!!.map?.get("block")?.patterns?.getOrNull(0)?.captures?.map?.get("1")?.name
             )
             assertEquals(
                 "punctuation.definition.parameters.c",
-                syntax.repository.map?.get("block")?.patterns?.getOrNull(0)?.captures?.map?.get("2")?.name
+                syntax.repository!!.map?.get("block")?.patterns?.getOrNull(0)?.captures?.map?.get("2")?.name
             )
         }
     }

@@ -57,3 +57,18 @@ object FindOptionConsts {
 fun disposeOnigString(str: OnigString) {
     str.dispose()
 }
+
+class DefaultOnigLib : OnigLib {
+    override fun createOnigScanner(source: Array<String>): OnigScanner {
+        return OnigScanner(source)
+    }
+
+    override fun createOnigString(str: String): OnigString {
+        return OnigString.create(str)
+    }
+
+}
+
+fun getDefaultOnigLib(): DefaultOnigLib {
+    return DefaultOnigLib()
+}

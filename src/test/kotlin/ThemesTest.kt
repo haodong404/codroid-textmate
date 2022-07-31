@@ -1,8 +1,8 @@
-import org.codroid.textmate.Registry
+import org.codroid.textmate.*
+import org.codroid.textmate.exceptions.TextMateException
+import org.codroid.textmate.oniguruma.getDefaultOnigLib
 import org.codroid.textmate.theme.*
-import org.codroid.textmate.strArrCmp
-import org.codroid.textmate.strcmp
-import java.nio.file.Paths
+import java.io.File
 import kotlin.experimental.or
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -10,20 +10,97 @@ import kotlin.test.assertEquals
 
 data class ThemeData(val themeName: String, val theme: RawTheme, val registry: Registry)
 
-val ThemesUri = {}.javaClass.getResource("themes")
+fun themeFile(disc: String): File? {
+    val temp = {}.javaClass.getResource("themes/$disc")
+    if (temp != null) {
+        return File(temp.toURI())
+    }
+    return null
+}
 
-class ThemeInfo(private val themeName: String, private val fileName: String, private val includeFilename: String?) {
+class ThemeInfo(
+    private val themeName: String,
+    private val fileName: String,
+    private val includeFilename: String? = null
+) {
 
     companion object {
         fun loadThemeFile(fileName: String): RawTheme {
-            val fullPath = Paths.get("")
-            TODO()
+            val input = themeFile(fileName)?.inputStream()
+            if (input != null) {
+                if (Regex("\\.json$").containsMatchIn(fileName)) {
+                    return parseJson(input)
+                }
+                return parsePLIST(input)
+            }
+            throw TextMateException("Input is null.")
         }
     }
 
+    fun create(resolver: Resolver): ThemeData {
+        val theme = loadThemeFile(this.fileName)
+        if (includeFilename != null) {
+            val includeTheme = loadThemeFile(this.includeFilename)
+            theme.settings = theme.settings?.plus(includeTheme.settings!!)
+        }
+        val registry = Registry(resolver)
+        registry.setTheme(theme, null)
+        return ThemeData(
+            themeName, theme, registry
+        )
+
+    }
 }
 
 class ThemesTest {
+
+    @Test
+    fun `Test theme with grammar and languages`() {
+        val themeInfos = arrayOf(
+            ThemeInfo("abyss", "Abyss.tmTheme"),
+            ThemeInfo("dark_vs", "dark_vs.json"),
+            ThemeInfo("light_vs", "light_vs.json"),
+            ThemeInfo("hc_black", "hc_black.json"),
+            ThemeInfo("dark_plus", "dark_plus.json", "dark_vs.json"),
+            ThemeInfo("light_plus", "light_plus.json", "light_vs.json"),
+            ThemeInfo("kimbie_dark", "Kimbie_dark.tmTheme"),
+            ThemeInfo("monokai", "Monokai.tmTheme"),
+            ThemeInfo("monokai_dimmed", "dimmed-monokai.tmTheme"),
+            ThemeInfo("quietlight", "QuietLight.tmTheme"),
+            ThemeInfo("red", "red.tmTheme"),
+            ThemeInfo("solarized_dark", "Solarized-dark.tmTheme"),
+            ThemeInfo("solarized_light", "Solarized-light.tmTheme"),
+            ThemeInfo("tomorrow_night_blue", "Tomorrow-Night-Blue.tmTheme"),
+        )
+
+        // Load all language/grammar metadata
+        val grammars =
+            parseJson<Array<GrammarRegistration>>(themeFile("grammars.json")!!.inputStream())
+        for (grammar in grammars) {
+            grammar.path = themeFile(grammar.path).toString()
+        }
+
+        val languages =
+            parseJson<Array<LanguageRegistration>>(themeFile("languages.json")!!.inputStream())
+        val resolver = Resolver(getDefaultOnigLib(), grammars, languages)
+        val themeData = themeInfos.map { it.create(resolver) }
+        // Discover all tests
+        var testFiles = themeFile("tests/")?.listFiles()
+        if (testFiles != null) {
+            testFiles = testFiles.filter { !Regex("\\.result$").containsMatchIn(it.name) }.toTypedArray()
+            testFiles = testFiles.filter { !Regex("\\.result.patch$").containsMatchIn(it.name) }.toTypedArray()
+            testFiles = testFiles.filter { !Regex("\\.actual$").containsMatchIn(it.name) }.toTypedArray()
+            testFiles = testFiles.filter { !Regex("\\.diff.html$").containsMatchIn(it.name) }.toTypedArray()
+        }
+
+        for (testFile in testFiles ?: emptyArray()) {
+            val themeTest = ThemeTest(testFile, themeData.toTypedArray(), resolver)
+            print("ThemeTesting: ${themeTest.testName.padEnd(30)}")
+            assertEquals(themeTest.expected, themeTest.actual)
+            println("√")
+        }
+    }
+
     @Test
     fun `Theme matching gives higher priority to deeper matches`() {
         val theme = Theme.createFromRawTheme(
@@ -31,10 +108,10 @@ class ThemesTest {
                 settings = arrayOf(
                     RawThemeSetting(settings = Setting(foreground = "#100000", background = "#200000")),
                     RawThemeSetting(
-                        scope = "punctuation.definition.string.begin.html", settings = Setting(foreground = "#300000")
+                        scopesStr = "punctuation.definition.string.begin.html", settings = Setting(foreground = "#300000")
                     ),
                     RawThemeSetting(
-                        scope = "meta.tag punctuation.definition.string", settings = Setting(foreground = "#400000")
+                        scopesStr = "meta.tag punctuation.definition.string", settings = Setting(foreground = "#400000")
                     )
                 )
             )
@@ -51,13 +128,13 @@ class ThemesTest {
                 settings = arrayOf(
                     RawThemeSetting(settings = Setting(foreground = "#100000", background = "#200000")),
                     RawThemeSetting(
-                        scope = "c a", settings = Setting(foreground = "#300000")
+                        scopesStr = "c a", settings = Setting(foreground = "#300000")
                     ),
                     RawThemeSetting(
-                        scope = "d a.b", settings = Setting(foreground = "#400000")
+                        scopesStr = "d a.b", settings = Setting(foreground = "#400000")
                     ),
                     RawThemeSetting(
-                        scope = "a", settings = Setting(foreground = "#500000")
+                        scopesStr = "a", settings = Setting(foreground = "#500000")
                     )
                 )
             )
@@ -74,13 +151,13 @@ class ThemesTest {
                 settings = arrayOf(
                     RawThemeSetting(settings = Setting(foreground = "#100000", background = "#200000")),
                     RawThemeSetting(
-                        scope = "meta.tag entity", settings = Setting(foreground = "#300000")
+                        scopesStr = "meta.tag entity", settings = Setting(foreground = "#300000")
                     ),
                     RawThemeSetting(
-                        scope = "meta.selector.css entity.name.tag", settings = Setting(foreground = "#400000")
+                        scopesStr = "meta.selector.css entity.name.tag", settings = Setting(foreground = "#400000")
                     ),
                     RawThemeSetting(
-                        scope = "entity", settings = Setting(foreground = "#500000")
+                        scopesStr = "entity", settings = Setting(foreground = "#500000")
                     )
                 )
             )
@@ -104,31 +181,31 @@ class ThemesTest {
                 settings = arrayOf(
                     RawThemeSetting(settings = Setting(foreground = "#F8F8F2", background = "#272822")),
                     RawThemeSetting(
-                        scope = "source, something", settings = Setting(background = "#100000")
+                        scopesStr = "source, something", settings = Setting(background = "#100000")
                     ),
                     RawThemeSetting(
                         scopes = arrayOf("bar", "baz"), settings = Setting(background = "#200000")
                     ),
                     RawThemeSetting(
-                        scope = "source.css selector bar", settings = Setting(fontStyle = "bold")
+                        scopesStr = "source.css selector bar", settings = Setting(fontStyle = "bold")
                     ),
                     RawThemeSetting(
-                        scope = "constant", settings = Setting(fontStyle = "italic", foreground = "#300000")
+                        scopesStr = "constant", settings = Setting(fontStyle = "italic", foreground = "#300000")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric", settings = Setting(foreground = "#400000")
+                        scopesStr = "constant.numeric", settings = Setting(foreground = "#400000")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric.hex", settings = Setting(fontStyle = "bold")
+                        scopesStr = "constant.numeric.hex", settings = Setting(fontStyle = "bold")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric.oct", settings = Setting(fontStyle = "bold italic underline")
+                        scopesStr = "constant.numeric.oct", settings = Setting(fontStyle = "bold italic underline")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric.dec", settings = Setting(fontStyle = "", foreground = "#500000")
+                        scopesStr = "constant.numeric.dec", settings = Setting(fontStyle = "", foreground = "#500000")
                     ),
                     RawThemeSetting(
-                        scope = "storage.object.bar", settings = Setting(fontStyle = "", foreground = "#600000")
+                        scopesStr = "storage.object.bar", settings = Setting(fontStyle = "", foreground = "#600000")
                     ),
                 )
             )
@@ -205,15 +282,15 @@ class ThemesTest {
                     RawThemeSetting(settings = Setting(foreground = "#aec2e0", background = "#14191f")),
                     RawThemeSetting(
                         name = "JSON String",
-                        scope = "meta.structure.dictionary.json string.quoted.double.json",
+                        scopesStr = "meta.structure.dictionary.json string.quoted.double.json",
                         settings = Setting(foreground = "#FF410D")
                     ),
                     RawThemeSetting(
-                        scope = "meta.structure.dictionary.json string.quoted.double.json",
+                        scopesStr = "meta.structure.dictionary.json string.quoted.double.json",
                         settings = Setting(foreground = "#ffffff")
                     ),
                     RawThemeSetting(
-                        scope = "meta.structure.dictionary.value.json string.quoted.double.json",
+                        scopesStr = "meta.structure.dictionary.value.json string.quoted.double.json",
                         settings = Setting(foreground = "#FF410D")
                     )
                 )
@@ -239,34 +316,34 @@ class ThemesTest {
                         settings = Setting(foreground = "#F8F8F2", background = "#272822")
                     ),
                     RawThemeSetting(
-                        scope = "source, something", settings = Setting(background = "#100000")
+                        scopesStr = "source, something", settings = Setting(background = "#100000")
                     ),
                     RawThemeSetting(
                         scopes = arrayOf("bar", "baz"), settings = Setting(background = "#010000")
                     ),
                     RawThemeSetting(
-                        scope = "source.css selector bar", settings = Setting(fontStyle = "bold")
+                        scopesStr = "source.css selector bar", settings = Setting(fontStyle = "bold")
                     ),
                     RawThemeSetting(
-                        scope = "constant", settings = Setting(fontStyle = "italic", foreground = "#ff0000")
+                        scopesStr = "constant", settings = Setting(fontStyle = "italic", foreground = "#ff0000")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric", settings = Setting(foreground = "#00ff00")
+                        scopesStr = "constant.numeric", settings = Setting(foreground = "#00ff00")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric.hex", settings = Setting(fontStyle = "bold")
+                        scopesStr = "constant.numeric.hex", settings = Setting(fontStyle = "bold")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric.oct", settings = Setting(fontStyle = "bold italic underline")
+                        scopesStr = "constant.numeric.oct", settings = Setting(fontStyle = "bold italic underline")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric.bin", settings = Setting(fontStyle = "bold strikethrough")
+                        scopesStr = "constant.numeric.bin", settings = Setting(fontStyle = "bold strikethrough")
                     ),
                     RawThemeSetting(
-                        scope = "constant.numeric.dec", settings = Setting(fontStyle = "", foreground = "#0000ff")
+                        scopesStr = "constant.numeric.dec", settings = Setting(fontStyle = "", foreground = "#0000ff")
                     ),
                     RawThemeSetting(
-                        scope = "foo", settings = Setting(fontStyle = "", foreground = "#CFA")
+                        scopesStr = "foo", settings = Setting(fontStyle = "", foreground = "#CFA")
                     ),
                 )
             )
@@ -797,33 +874,33 @@ class ThemesTest {
                         )
                     ), RawThemeSetting(
                         name = "Variable",
-                        scope = "variable",
+                        scopesStr = "variable",
                         settings = Setting(
                             fontStyle = ""
                         )
                     ), RawThemeSetting(
                         name = "Function argument",
-                        scope = "variable.parameter",
+                        scopesStr = "variable.parameter",
                         settings = Setting(
                             fontStyle = "italic",
                             foreground = ""
                         )
                     ), RawThemeSetting(
                         name = "Library variable",
-                        scope = "support.other.variable",
+                        scopesStr = "support.other.variable",
                         settings = Setting(
                             fontStyle = ""
                         )
                     ), RawThemeSetting(
                         name = "Function argument",
-                        scope = "variable.other",
+                        scopesStr = "variable.other",
                         settings = Setting(
                             foreground = "",
                             fontStyle = "normal"
                         )
                     ), RawThemeSetting(
                         name = "Coffeescript Function argument",
-                        scope = "variable.parameter.function.coffee",
+                        scopesStr = "variable.parameter.function.coffee",
                         settings = Setting(
                             foreground = "#F9D423",
                             fontStyle = "italic"
@@ -856,7 +933,7 @@ class ThemesTest {
                         )
                     ), RawThemeSetting(
                         name = "CSS at-rule keyword control",
-                        scope = arrayOf(
+                        scopesStr = arrayOf(
                             "meta.at-rule.return.scss,",
                             "meta.at-rule.return.scss punctuation.definition,",
                             "meta.at-rule.else.scss,",
@@ -904,6 +981,4 @@ class ThemesTest {
 
         assertContentEquals(expected, actual)
     }
-
-
 }

@@ -115,7 +115,7 @@ fun tokenizeString(
             lineTokens.produce(stackClone, captureIndices[0].start)
             val beforePush = stackClone
             // push it on the stack rule
-            val scopeName = rule.getName(lineText.content, captureIndices)
+            val scopeName = rule?.getName(lineText.content, captureIndices)
             val nameScopesList = stackClone.contentNameScopesList.pushAttributed(scopeName, grammar)
             stackClone = stackClone.push(
                 matchedRuleId, linePosClone, anchorPosition, captureIndices[0].end == lineLength,
@@ -141,8 +141,9 @@ fun tokenizeString(
                     val contentNameScopesList = nameScopesList.pushAttributed(contentName, grammar)
                     stackClone = stackClone.withContentNameScopesList(contentNameScopesList)
                     if (rule.endHasBackReferences) {
+                        val temp = rule.getEndWithResolvedBackReferences(lineText.content, captureIndices)
                         stackClone = stackClone.withEndRule(
-                            rule.getEndWithResolvedBackReferences(lineText.content, captureIndices)
+                            temp
                         )
                     }
                     if (!hasAdvanced && beforePush.hasSameRuleAs(stackClone)) {

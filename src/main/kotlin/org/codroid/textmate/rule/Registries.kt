@@ -6,7 +6,7 @@ import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.theme.ScopeName
 
 interface RuleRegistry {
-    fun getRule(ruleId: RuleId): Rule
+    fun getRule(ruleId: RuleId): Rule?
     fun <T : Rule> registerRule(factor: (id: RuleId) -> T): T
 }
 

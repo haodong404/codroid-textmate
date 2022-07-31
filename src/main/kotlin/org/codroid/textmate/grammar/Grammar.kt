@@ -34,18 +34,20 @@ interface GrammarReposThemeProvider : GrammarRepository, ThemeProvider
 
 interface GrammarRepository {
     fun lookup(scopeName: ScopeName): RawGrammar?
-    fun injections(targetScope: ScopeName): Array<ScopeName>
+    fun injections(targetScope: ScopeName): Array<ScopeName>?
 }
 
 fun initGrammar(grammar: RawGrammar, base: RawRule?): RawGrammar {
     val grammarClone = grammar.clone()
-    if (grammarClone.repository.map == null) {
-        grammarClone.repository.map = HashMap()
+    grammarClone.repository.let {
+        if (it.map == null) {
+            it.map = HashMap()
+        }
+        it.map!!["\$self"] = RawRule(
+            location = grammarClone.location, patterns = grammarClone.patterns, name = grammarClone.scopeName
+        )
+        it.map!!["\$base"] = base ?: it.map!!["\$self"]!!
     }
-    grammarClone.repository.map!!["self"] = RawRule(
-        location = grammarClone.location, patterns = grammarClone.patterns, name = grammarClone.scopeName
-    )
-    grammarClone.repository.map!!["base"] = base ?: grammarClone.repository.map!!["self"]!!
     return grammarClone
 }
 
@@ -87,9 +89,7 @@ class Grammar(
 
     fun dispose() {
         for (rule in this.ruleId2Desc) {
-            if (rule != null) {
-                this.dispose()
-            }
+            this.dispose()
         }
     }
 
@@ -105,7 +105,7 @@ class Grammar(
                 return this@Grammar.getExternalGrammar(scopeName, null)
             }
 
-            override fun injections(targetScope: ScopeName): Array<ScopeName> =
+            override fun injections(targetScope: ScopeName): Array<ScopeName>? =
                 this@Grammar.grammarRepository.injections(targetScope)
         }
         val result = mutableListOf<Injection>()
@@ -123,7 +123,7 @@ class Grammar(
 
             // add injection grammars contributed for the current scope
 
-            this.grammarRepository.injections(scopeName).forEach {
+            this.grammarRepository.injections(scopeName)?.forEach {
                 val injectionGrammar = this.getExternalGrammar(it, null)
                 if (injectionGrammar != null) {
                     val selector = injectionGrammar.injectionSelector
@@ -173,7 +173,7 @@ class Grammar(
         )
     }
 
-    override fun getRule(ruleId: RuleId): Rule = this.ruleId2Desc[ruleId.id]!!
+    override fun getRule(ruleId: RuleId): Rule? = this.ruleId2Desc[ruleId.id]
     override fun <T : Rule> registerRule(factor: (id: RuleId) -> T): T {
         this.lastRuleId++
         val id = this.lastRuleId.clone()
@@ -188,8 +188,8 @@ class Grammar(
         } else {
             this.grammarRepository.lookup(scopeName)?.let {
                 val temp: RawRule? = if (repository != null) {
-                    if (repository.map?.containsKey("base") == true) {
-                        repository.map!!["base"]
+                    if (repository.map?.containsKey("\$base") == true) {
+                        repository.map!!["\$base"]
                     } else {
                         null
                     }
@@ -221,7 +221,7 @@ class Grammar(
     ): TokenizeResult {
         if (this.rootId == RuleId.End) {
             this.rootId = RuleFactory.getCompiledRuleId(
-                this.grammar.repository.map!!["self"]!!, this, this.grammar.repository
+                this.grammar.repository.map!!["\$self"]!!, this, this.grammar.repository
             )
         }
 
@@ -240,7 +240,7 @@ class Grammar(
                 defaultStyle.foregroundId,
                 defaultStyle.backgroundId
             )
-            val rootScopeName = this.getRule(this.rootId).getName(null, null)
+            val rootScopeName = this.getRule(this.rootId)?.getName(null, null)
             val scopeList: AttributedScopeStack = if (rootScopeName != null) {
                 AttributedScopeStack.createRootAndLookUpScopeName(
                     rootScopeName, defaultMetadata, this

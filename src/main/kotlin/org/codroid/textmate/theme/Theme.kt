@@ -123,8 +123,8 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
     if (settings != null) {
         for ((idx, setting) in settings.withIndex()) {
             val scopes = mutableListOf<String>()
-            if (setting.scope != null) {
-                val scope = StringBuilder(setting.scope!!.trim())
+            if (setting.scopesStr != null) {
+                val scope = StringBuilder(setting.scopesStr!!.trim())
                 if (scope.startsWith(',')) {   // remove leading commas
                     scope.deleteAt(0)
                 }

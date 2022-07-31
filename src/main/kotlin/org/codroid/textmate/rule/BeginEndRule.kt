@@ -55,7 +55,7 @@ class BeginEndRule(
         if (this.cachedCompiledPatterns == null) {
             this.cachedCompiledPatterns = RegExpSourceList()
             for (pattern in this.patterns) {
-                grammar.getRule(pattern).collectPatterns(grammar, this.cachedCompiledPatterns!!)
+                grammar.getRule(pattern)?.collectPatterns(grammar, this.cachedCompiledPatterns!!)
             }
             val temp = if (this.end.hasBackReferences) {
                 this.end.clone()

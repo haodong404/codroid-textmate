@@ -131,15 +131,26 @@ object RuleFactory {
                             }
                         }
 
-                        is TopLevelReference -> {}
+                        is TopLevelReference,
                         is TopLevelRepositoryReference -> {
-                            val externalGrammarName = reference.scopeName
-                            val externalGrammarInclude = reference.ruleName
+                            val externalGrammarName = (reference as TopLevel).scopeName
+                            val externalGrammarInclude = if (reference is TopLevelRepositoryReference) {
+                                reference.ruleName
+                            } else {
+                                null
+                            }
                             // External include
-                            helper.getExternalGrammar(externalGrammarName, repository)?.let {
-                                val externalIncludeRule = it.repository.map?.get(externalGrammarInclude)
-                                if (externalIncludeRule != null) {
-                                    ruleId = getCompiledRuleId(externalIncludeRule, helper, repository)
+                            helper.getExternalGrammar(externalGrammarName, repository)?.let { externalGrammar ->
+                                if (externalGrammarInclude != null) {
+                                    externalGrammar.repository.map?.get(externalGrammarInclude)?.let {
+                                        ruleId = getCompiledRuleId(it, helper, repository)
+                                    }
+                                } else {
+                                    ruleId = getCompiledRuleId(
+                                        externalGrammar.repository.map!!["\$self"]!!,
+                                        helper,
+                                        externalGrammar.repository
+                                    )
                                 }
                             }
 

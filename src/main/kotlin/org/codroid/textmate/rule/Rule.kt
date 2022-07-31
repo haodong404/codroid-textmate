@@ -29,13 +29,17 @@ class RuleId(var id: Int) : Cloneable {
         return id
     }
 
+    override fun toString(): String {
+        return "ID: $id"
+    }
+
     operator fun inc(): RuleId {
         this.id++
         return this
     }
 
     public override fun clone(): RuleId {
-        return RuleId.from(this.id)
+        return from(this.id)
     }
 }
 

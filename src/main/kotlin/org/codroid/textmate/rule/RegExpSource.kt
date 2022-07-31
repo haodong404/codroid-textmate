@@ -61,7 +61,7 @@ class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
         } else {
             this.anchorCache = null
         }
-        this.hasBackReferences = HAS_BACK_REFERENCES.matches(this.source)
+        this.hasBackReferences = HAS_BACK_REFERENCES.containsMatchIn(this.source)
     }
 
     public override fun clone(): RegExpSource {
@@ -73,7 +73,7 @@ class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
             lineText.substring(it.start, it.end)
         }
         return this.source.replace(BACK_REFERENCING_END) {
-            return@replace escapeRegExpCharacters(captureValues.getOrElse(it.groupValues[0].toInt()) { "" })
+            return@replace escapeRegExpCharacters(captureValues.getOrElse(it.groupValues[1].toInt()) { "" })
         }
     }
 

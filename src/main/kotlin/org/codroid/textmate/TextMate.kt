@@ -17,8 +17,8 @@ import org.codroid.textmate.theme.Theme
 
 typealias EmbeddedLanguagesMap = HashMap<ScopeName, Int>
 
-data class RegistryOptions(
-    val onigLib: OnigLib,
+open class RegistryOptions(
+    open val onigLib: OnigLib,
     val theme: RawTheme? = null,
     val colorMap: Array<String>? = null,
     val loadGrammar: (suspend (scopeName: ScopeName) -> RawGrammar?)? = null,

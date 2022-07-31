@@ -20,7 +20,7 @@ data class RawGrammar(
     override val location: Location? = null,
 
     @Serializable(with = RawRepositorySerializer::class)
-    val repository: RawRepository,
+    val repository: RawRepository = RawRepository(map = RawRepositoryMap()),
     val scopeName: ScopeName,
     val patterns: Array<RawRule>,
     val injections: HashMap<String, RawRule>? = null,
@@ -115,6 +115,7 @@ data class RawRule(
 
     @Serializable(with = RawCapturesMapSerializer::class)
     val whileCaptures: RawCaptures? = null,
+
     var patterns: Array<RawRule>? = null,
 
     @Serializable(with = RawRepositorySerializer::class)

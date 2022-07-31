@@ -29,7 +29,7 @@ class IncludeOnlyRule(
 
     override fun collectPatterns(grammar: RuleRegistry, out: RegExpSourceList) {
         for (pattern in this.patterns) {
-            grammar.getRule(pattern).collectPatterns(grammar, out)
+            grammar.getRule(pattern)?.collectPatterns(grammar, out)
         }
     }
 

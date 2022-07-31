@@ -1,5 +1,13 @@
 package org.codroid.textmate.theme
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ArraySerializer
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonTransformingSerializer
+
+@Serializable
 data class Setting(
     var fontStyle: String? = null, var foreground: String? = null, var background: String? = null
 ) {
@@ -21,10 +29,13 @@ data class Setting(
     }
 }
 
+@Serializable
 data class RawThemeSetting(
     var name: String? = null,
+
+    @Serializable(with = RawThemeSettingSerializer::class)
     var scopes: Array<ScopePattern>? = null,
-    var scope: ScopePattern? = null,
+    var scopesStr: String? = null,
     var settings: Setting? = null,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -34,7 +45,7 @@ data class RawThemeSetting(
         other as RawThemeSetting
 
         if (name != other.name) return false
-        if (!scope.contentEquals(other.scope)) return false
+        if (!scopesStr.contentEquals(other.scopesStr)) return false
         if (settings != other.settings) return false
 
         return true
@@ -42,8 +53,19 @@ data class RawThemeSetting(
 
     override fun hashCode(): Int {
         var result = name.hashCode()
-        result = 31 * result + scope.hashCode()
+        result = 31 * result + scopesStr.hashCode()
         result = 31 * result + settings.hashCode()
         return result
+    }
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+object RawThemeSettingSerializer :
+    JsonTransformingSerializer<Array<RawThemeSetting>>(ArraySerializer(RawThemeSetting.serializer())) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        if (element !is JsonArray) {
+            return JsonArray(listOf(element))
+        }
+        return element
     }
 }

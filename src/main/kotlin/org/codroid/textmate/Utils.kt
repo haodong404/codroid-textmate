@@ -4,6 +4,7 @@ import com.dd.plist.PropertyListParser
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.*
 import org.codroid.textmate.grammar.RawCaptures
+import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.RawRepository
 import org.codroid.textmate.oniguruma.OnigCaptureIndex
 import java.io.InputStream
@@ -28,7 +29,7 @@ private var CAPTURING_REGEX_SOURCE = Regex("\\\$(\\d+)|\\\$*(\\d+):/(downcase|up
 object RegexSource {
     fun hasCaptures(regexSource: String?): Boolean {
         if (regexSource == null) return false
-        return CAPTURING_REGEX_SOURCE.matches(regexSource)
+        return CAPTURING_REGEX_SOURCE.containsMatchIn(regexSource)
     }
 
     fun replaceCaptures(
@@ -93,14 +94,14 @@ fun strArrCmp(a: Array<String>?, b: Array<String>?): Int {
 }
 
 fun isValidHexColor(hex: String): Boolean {
-    return if (Regex("^#[\\da-f]{6}\$", RegexOption.IGNORE_CASE).matches(hex)) {
+    return if (Regex("^#[\\da-f]{6}\$", RegexOption.IGNORE_CASE).containsMatchIn(hex)) {
         true
-    } else if (Regex("^#[\\da-f]{8}\$", RegexOption.IGNORE_CASE).matches(hex)) {
+    } else if (Regex("^#[\\da-f]{8}\$", RegexOption.IGNORE_CASE).containsMatchIn(hex)) {
         true
-    } else if (Regex("^#[\\da-f]{3}\$", RegexOption.IGNORE_CASE).matches(hex)) {
+    } else if (Regex("^#[\\da-f]{3}\$", RegexOption.IGNORE_CASE).containsMatchIn(hex)) {
         true
     } else {
-        Regex("^#[\\da-f]{4}\$", RegexOption.IGNORE_CASE).matches(hex)
+        Regex("^#[\\da-f]{4}\$", RegexOption.IGNORE_CASE).containsMatchIn(hex)
     }
 
 }
@@ -109,7 +110,9 @@ fun isValidHexColor(hex: String): Boolean {
  * Escapes regular expression characters in a given string
  */
 fun escapeRegExpCharacters(value: String): String =
-    value.replace(Regex("[\\-\\\\{}*+?|^$.,\\[\\]()#\\s]"), "\\$&")
+    value.replace(Regex("[\\-\\\\{}*+?|^$.,\\[\\]()#\\s]")) {
+        "\\${it.value}"
+    }
 
 class CachedFn<K, V>(private val fn: (key: K) -> V) {
     private val cache = HashMap<K, V>()
@@ -171,7 +174,12 @@ val json = Json {
 
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> parseJson(input: InputStream): T {
-    return Json {
-        ignoreUnknownKeys = true
-    }.decodeFromStream(input)
+    return json.decodeFromStream(input)
+}
+
+fun parseRawGrammar(input: InputStream, filePath: String): RawGrammar {
+    if (Regex("\\.json$").containsMatchIn(filePath)) {
+        return parseJson(input)
+    }
+    return parsePLIST(input)
 }

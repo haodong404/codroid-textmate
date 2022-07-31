@@ -15,7 +15,7 @@ class Matchers<T>(selector: String, val matchesName: (names: List<String>, match
             if (token == null) {
                 return false
             }
-            return token.matches(Regex("[\\w.:]+"))
+            return token.contains(Regex("[\\w.:]+"))
         }
 
         fun newTokenizer(input: String): () -> String? {

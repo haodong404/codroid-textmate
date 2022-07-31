@@ -115,7 +115,7 @@ object RuleMatching {
             stack.endRule,
             isFirstLine,
             linePos == anchorPosition
-        )
+        ) ?: return null
         var perfStart = 0L
         if (DebugFlag) {
             perfStart = System.currentTimeMillis()
@@ -125,7 +125,7 @@ object RuleMatching {
         if (DebugFlag) {
             val elapsedMillis = System.currentTimeMillis() - perfStart
             if (elapsedMillis > 5) {
-                println("Rule ${rule.debugName()} (${rule.id} matching took $elapsedMillis against '$lineText'")
+                println("Rule ${rule?.debugName()} (${rule?.id} matching took $elapsedMillis against '$lineText'")
             }
             println("  scanning for (linePos: $linePos, anchorPosition: $anchorPosition")
             println(ruleScanner.toString())
@@ -168,7 +168,7 @@ object RuleMatching {
                 null,
                 isFirstLine,
                 linePos == anchorPosition
-            )
+            ) ?: return null
             val matchResult = ruleScanner.findNextMatchSync(lineText, linePos, findOptions) ?: continue
             if (DebugFlag) {
                 println("  matched injection: ${injection.debugSelector}")
@@ -199,13 +199,13 @@ object RuleMatching {
     }
 
     private fun prepareRuleSearch(
-        rule: Rule,
+        rule: Rule?,
         grammar: Grammar,
         endRegexSource: String?,
         allowA: Boolean,
         allowG: Boolean
-    ): PrepareRuleResult {
-        val runScanner = rule.compileAG(grammar, endRegexSource ?: "", allowA, allowG)
+    ): PrepareRuleResult? {
+        val runScanner = rule?.compileAG(grammar, endRegexSource ?: "", allowA, allowG) ?: return null
         return PrepareRuleResult(runScanner, FindOptionConsts.None)
     }
 
@@ -279,7 +279,7 @@ object RuleMatching {
                 lineTokens.produce(stack, captureIndex.start)
             }
 
-            if (captureRule.retokenizeCapturedWithRuleId != null) {
+            if (captureRule.retokenizeCapturedWithRuleId != RuleId.from(0)) {
                 // the capture requires additional matching
                 val scopeName = captureRule.getName(lineTextContent, captureIndices)
                 val nameScopesList = stack.contentNameScopesList.pushAttributed(scopeName, grammar)

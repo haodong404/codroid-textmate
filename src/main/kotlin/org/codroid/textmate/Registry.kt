@@ -46,7 +46,7 @@ class SyncRegistry(
     /**
      * Returns the injections for the given grammar
      */
-    override fun injections(targetScope: ScopeName): Array<ScopeName> = this.injectionGrammars[targetScope]!!
+    override fun injections(targetScope: ScopeName): Array<ScopeName>? = this.injectionGrammars[targetScope]
 
     /**
      * Match a scope in the theme.

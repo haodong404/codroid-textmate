@@ -26,14 +26,18 @@ class RelativeReference(val ruleName: ScopeName) : IncludeReference {
         get() = IncludeReferenceKind.RelativeReference
 }
 
-class TopLevelReference(val scopeName: ScopeName) : IncludeReference {
+interface TopLevel {
+    val scopeName: ScopeName
+}
+
+class TopLevelReference(override val scopeName: ScopeName) : IncludeReference, TopLevel {
     override val kind: IncludeReferenceKind
         get() = IncludeReferenceKind.TopLevelReference
 }
 
 class TopLevelRepositoryReference(
-    val scopeName: ScopeName, val ruleName: String
-) : IncludeReference {
+    override val scopeName: ScopeName, val ruleName: String
+) : IncludeReference, TopLevel {
     override val kind: IncludeReferenceKind
         get() = IncludeReferenceKind.TopLevelRepositoryReference
 

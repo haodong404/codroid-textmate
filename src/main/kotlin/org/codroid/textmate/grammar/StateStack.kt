@@ -44,7 +44,7 @@ class StateStack(
 ) : StackElementDef {
 
     override var depth: Int = if (this.parent != null) {
-        this.parent.depth
+        this.parent.depth + 1
     } else {
         1
     }
@@ -59,7 +59,7 @@ class StateStack(
     }
 
     private fun reset(new: StateStack?) {
-        var newClone = new?.clone()
+        var newClone = new
         while (newClone != null) {
             newClone.enterPos = -1
             newClone.anchorPos = -1
@@ -147,7 +147,7 @@ class StateStack(
         contentNameScopesList
     )
 
-    fun getRule(grammar: RuleRegistry): Rule = grammar.getRule(this.ruleId)
+    fun getRule(grammar: RuleRegistry): Rule? = grammar.getRule(this.ruleId)
 
     private fun writeString(res: Array<String>, outIndex: Int): Int {
         var outIndexClone = outIndex
@@ -156,19 +156,19 @@ class StateStack(
         return outIndexClone
     }
 
-    override fun toString(): String {
-        val result = mutableListOf<String>()
-        this.writeString(result.toTypedArray(), 0)
-        return "[${result.joinToString(",")}]"
-    }
+//    override fun toString(): String {
+//        val result = mutableListOf<String>()
+//        this.writeString(result.toTypedArray(), 0)
+//        return "[${result.joinToString(",")}]"
+//    }
 
     fun withContentNameScopesList(contentNameScopeStack: AttributedScopeStack): StateStack {
-        if (this.contentNameScopesList == contentNameScopesList) {
+        if (this.contentNameScopesList == contentNameScopeStack) {
             return this
         }
         return this.parent!!.push(
             this.ruleId, this.enterPos, this.anchorPos, this.beginRuleCapturedEOL,
-            this.endRule, this.nameScopesList, contentNameScopesList
+            this.endRule, this.nameScopesList, contentNameScopeStack
         )
     }
 

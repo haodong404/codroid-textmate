@@ -104,7 +104,7 @@ fun collectReferencesOfReference(
                 result
             )
         }
-        val injections = repo.injections(reference.scopeName)
+        val injections = repo.injections(reference.scopeName) ?: emptyArray()
         for (injection in injections) {
             result.add(TopLevelRuleReference(injection))
         }
@@ -188,8 +188,9 @@ fun collectExternalReferencesInRules(
             )
         }
         val include = rule.include ?: continue
-        when (val reference = parseInclude(include)) {
-            is BaseReference ->
+        val reference = parseInclude(include)
+        when (reference.kind) {
+            IncludeReferenceKind.Base ->
                 collectExternalReferencesInTopLevelRule(
                     Context(
                         /*
@@ -199,32 +200,44 @@ fun collectExternalReferencesInRules(
                         baseGrammar = context.baseGrammar
                     ), result
                 )
-            is SelfReference ->
+
+            IncludeReferenceKind.Self ->
                 collectExternalReferencesInTopLevelRule(context, result)
-            is RelativeReference ->
+
+            IncludeReferenceKind.RelativeReference ->
                 collectExternalReferencesInTopLevelRepositoryRule(
-                    reference.ruleName,
+                    (reference as RelativeReference).ruleName,
                     ContextWithRepository(context, patternRepository),
                     result
                 )
-            is TopLevelReference -> {}
-            is TopLevelRepositoryReference -> {
-                val selfGrammar = if (reference.scopeName.contentEquals(context.selfGrammar.scopeName)) {
-                    context.selfGrammar
-                } else if (reference.scopeName.contentEquals(context.baseGrammar.scopeName)) {
-                    context.baseGrammar
-                } else {
-                    null
-                }
+
+            IncludeReferenceKind.TopLevelReference,
+            IncludeReferenceKind.TopLevelRepositoryReference -> {
+                val selfGrammar =
+                    if ((reference as TopLevel).scopeName.contentEquals(context.selfGrammar.scopeName)) {
+                        context.selfGrammar
+                    } else if (reference.scopeName.contentEquals(context.baseGrammar.scopeName)) {
+                        context.baseGrammar
+                    } else {
+                        null
+                    }
                 if (selfGrammar != null) {
                     val newContext = ContextWithRepository(
                         baseGrammar = context.baseGrammar,
                         selfGrammar = selfGrammar,
                         repository = patternRepository
                     )
-                    collectExternalReferencesInTopLevelRepositoryRule(reference.ruleName, newContext, result)
+                    if (reference is TopLevelRepositoryReference) {
+                        collectExternalReferencesInTopLevelRepositoryRule(reference.ruleName, newContext, result)
+                    } else {
+                        collectExternalReferencesInTopLevelRule(newContext, result)
+                    }
                 } else {
-                    result.add(TopLevelRepositoryRuleReference(reference.scopeName, reference.ruleName))
+                    if (reference is TopLevelRepositoryReference) {
+                        result.add(TopLevelRepositoryRuleReference(reference.scopeName, reference.ruleName))
+                    } else {
+                        result.add(TopLevelRuleReference(reference.scopeName))
+                    }
                 }
             }
         }
@@ -232,9 +245,9 @@ fun collectExternalReferencesInRules(
 }
 
 fun parseInclude(include: String): IncludeReference {
-    if (include.contentEquals("base")) {
+    if (include.contentEquals("\$base")) {
         return BaseReference()
-    } else if (include.contentEquals("self")) {
+    } else if (include.contentEquals("\$self")) {
         return SelfReference()
     }
 
