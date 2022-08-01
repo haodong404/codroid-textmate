@@ -109,7 +109,7 @@ object RuleMatching {
         anchorPosition: Int
     ): MatchResult? {
         val rule = stack.getRule(grammar)
-        val (ruleScanner, findOptions) = prepareRuleSearch(
+        val (ruleScanner, findOption) = prepareRuleSearch(
             rule,
             grammar,
             stack.endRule,
@@ -121,7 +121,7 @@ object RuleMatching {
             perfStart = System.currentTimeMillis()
         }
 
-        val result = ruleScanner.findNextMatchSync(lineText, linePos, findOptions)
+        val result = ruleScanner.findNextMatchSync(lineText, linePos, findOption)
         if (DebugFlag) {
             val elapsedMillis = System.currentTimeMillis() - perfStart
             if (elapsedMillis > 5) {

@@ -1,5 +1,6 @@
 package org.codroid.textmate.rule
 
+import org.codroid.textmate.RegexSource
 import org.codroid.textmate.grammar.Location
 import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
@@ -14,7 +15,11 @@ class BeginWhileRule(
     _while: String,
     val whileCaptures: Array<CaptureRule?>,
     patterns: CompilePatternsResult
-) : Rule(location, id, name, contentName), WithPatternRule {
+) : Rule(), WithPatternRule {
+
+    override val nameIsCapturing: Boolean = RegexSource.hasCaptures(name)
+    override val contentNameIsCapturing: Boolean = RegexSource.hasCaptures(contentName)
+
     private val begin = RegExpSource(begin, this.id)
     private val _while = RegExpSource(_while, RuleId.While)
     val whileHasBackReferences = this._while.hasBackReferences
@@ -22,6 +27,7 @@ class BeginWhileRule(
     override val hasMissingPatterns = patterns.hasMissingPatterns
     private var cachedCompiledPatterns: RegExpSourceList? = null
     private var cachedCompiledWhilePatterns: RegExpSourceList? = null
+
     override fun dispose() {
         if (this.cachedCompiledPatterns != null) {
             this.cachedCompiledPatterns!!.dispose()
@@ -58,7 +64,7 @@ class BeginWhileRule(
         if (this.cachedCompiledPatterns == null) {
             this.cachedCompiledPatterns = RegExpSourceList()
             for (pattern in this.patterns) {
-                grammar.getRule(pattern).collectPatterns(grammar, this.cachedCompiledPatterns!!)
+                grammar.getRule(pattern)?.collectPatterns(grammar, this.cachedCompiledPatterns!!)
             }
         }
         return this.cachedCompiledPatterns!!

@@ -2,6 +2,12 @@ package org.codroid.textmate
 
 import com.dd.plist.PropertyListParser
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import org.codroid.textmate.grammar.RawCaptures
 import org.codroid.textmate.grammar.RawGrammar
@@ -24,7 +30,7 @@ inline fun <reified T : Cloneable> MutableList<T>.clone(): MutableList<T> {
     return cloned
 }
 
-private var CAPTURING_REGEX_SOURCE = Regex("\\\$(\\d+)|\\\$*(\\d+):/(downcase|upcase)}")
+private var CAPTURING_REGEX_SOURCE = Regex("""\$(\d+)|\$\{(\d+):/(downcase|upcase)}""")
 
 object RegexSource {
     fun hasCaptures(regexSource: String?): Boolean {
@@ -38,7 +44,7 @@ object RegexSource {
         return regexSource.replace(CAPTURING_REGEX_SOURCE) {
             val capture = captureIndices.getOrNull(
                 Integer.parseInt(
-                    it.groupValues.getOrNull(0) ?: it.groupValues.getOrElse(1) { "0" }, 10
+                    it.groups[1]?.value ?: it.groups[2]?.value ?: "0", 10
                 )
             )
             return@replace if (capture != null) {
@@ -47,7 +53,7 @@ object RegexSource {
                 while (result[0] == '.') {
                     result = result.substring(1)
                 }
-                when (it.groupValues.getOrElse(2) { false }) {
+                when (it.groups[3]?.value) {
                     "downcase" -> result.lowercase()
                     "upcase" -> result.uppercase()
                     else -> result
@@ -143,15 +149,36 @@ fun Byte.toBoolean(): Boolean {
     }
 }
 
-object RawCapturesMapSerializer : JsonTransformingSerializer<RawCaptures>(RawCaptures.serializer()) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        return dynamicMap(element)
-    }
-}
+object IntBooleanSerializer : KSerializer<Boolean> {
 
-object RawRepositorySerializer : JsonTransformingSerializer<RawRepository>(RawRepository.serializer()) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        return dynamicMap(element)
+    override val descriptor: SerialDescriptor
+        get() = PrimitiveSerialDescriptor("IntBoolean", PrimitiveKind.BOOLEAN)
+
+    override fun deserialize(decoder: Decoder): Boolean {
+        var intDecoded: Int? = null
+        var boolDecoded: Boolean? = null
+        try {
+            intDecoded = decoder.decodeInt()
+        } catch (_: Exception) {
+
+        }
+
+        try {
+            boolDecoded = decoder.decodeBoolean()
+        } catch (e: Exception) {
+        }
+        return if (intDecoded != null) {
+            when (intDecoded) {
+                1 -> true
+                else -> false
+            }
+        } else {
+            boolDecoded ?: false
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: Boolean) {
+        encoder.encodeBoolean(value)
     }
 }
 
@@ -182,4 +209,22 @@ fun parseRawGrammar(input: InputStream, filePath: String): RawGrammar {
         return parseJson(input)
     }
     return parsePLIST(input)
+}
+
+fun <T> List<T>.every(test: (value: T) -> Boolean): Boolean {
+    for (t in this) {
+        if (!test(t)) {
+            return false
+        }
+    }
+    return true
+}
+
+fun <T> List<T>.some(test: (value: T) -> Boolean): Boolean {
+    for (t in this) {
+        if (test(t)) {
+            return true
+        }
+    }
+    return false
 }

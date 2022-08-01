@@ -93,15 +93,8 @@ class Matchers<T>(selector: String, val matchesName: (names: List<String>, match
             matchers.add(matcher)
             matcher = parseOperand()
         }
-        return result@{
-            var temp = true
-            for (item in matchers) {
-                if (!item(it)) {
-                    temp = false
-                    break
-                }
-            }
-            return@result temp
+        return { input ->
+            matchers.every { it(input) }
         } // and
     }
 
@@ -119,13 +112,8 @@ class Matchers<T>(selector: String, val matchesName: (names: List<String>, match
             }
             matcher = parseConjunction()
         }
-        return result@{
-            for (item in matchers) {
-                if (item(it)) {
-                    return@result true
-                }
-            }
-            return@result false
+        return { input ->
+            matchers.some { it(input) }
         }
     } // or
 }

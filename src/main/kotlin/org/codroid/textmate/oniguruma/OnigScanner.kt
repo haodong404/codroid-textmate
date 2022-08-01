@@ -4,8 +4,8 @@ class OnigScanner(patterns: Array<String>) {
 
     private val searcher = OnigSearcher(patterns)
 
-    fun findNextMatchSync(string: OnigString, startPosition: Int, options: FindOption): OnigMatch? {
-        return OnigMatch(searcher.search(string, startPosition) ?: return null, string)
+    fun findNextMatchSync(string: OnigString, startPosition: Int, option: FindOption): OnigMatch? {
+        return OnigMatch(searcher.search(string, startPosition, option) ?: return null, string)
     }
 
     fun dispose() {

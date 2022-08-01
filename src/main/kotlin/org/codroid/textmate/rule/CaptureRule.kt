@@ -1,5 +1,6 @@
 package org.codroid.textmate.rule
 
+import org.codroid.textmate.RegexSource
 import org.codroid.textmate.exceptions.TextMateException
 import org.codroid.textmate.grammar.Location
 
@@ -9,7 +10,9 @@ class CaptureRule(
     override val name: String?,
     override val contentName: String?,
     val retokenizeCapturedWithRuleId: RuleId
-) : Rule(location, id, name, contentName) {
+) : Rule() {
+    override val nameIsCapturing: Boolean = RegexSource.hasCaptures(name)
+    override val contentNameIsCapturing: Boolean = RegexSource.hasCaptures(contentName)
 
     override fun dispose() {
         // Nothing to dispose.

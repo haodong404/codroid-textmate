@@ -58,24 +58,33 @@ class MultiByteString(
 
     private fun getByteToCharOffsets(): IntArray {
         var offsets: IntArray? = byteToCharOffsets
-        if (offsets?.isEmpty() == true) {
+        if (offsets == null) {
             offsets = IntArray(bytesCount)
             var charIndex = 0
             var byteIndex = 0
             val maxByteIndex: Int = bytesCount - 1
             while (byteIndex <= maxByteIndex) {
                 val charLenInBytes = UTF8Encoding.INSTANCE.length(bytesUTF8, byteIndex, bytesCount)
+                var charCount = 1
+                if (charLenInBytes > 1) {
+                    val chars = ByteArray(charLenInBytes) {
+                        bytesUTF8[byteIndex + it]
+                    }
+                    charCount = String(chars, Charsets.UTF_8).length
+                }
                 // same as "Arrays.fill(offsets, byteIndex, byteIndex + charLenInBytes, charIndex)" but faster
                 val l = byteIndex + charLenInBytes
                 while (byteIndex < l) {
                     offsets[byteIndex] = charIndex
                     byteIndex++
                 }
-                charIndex++
+
+
+                charIndex += charCount
             }
             byteToCharOffsets = offsets
         }
-        return offsets ?: IntArray(0)
+        return offsets
     }
 
     override fun getCharIndexOfByte(byteIndex: Int): Int {
@@ -94,7 +103,6 @@ class MultiByteString(
     }
 
     override fun dispose() {
-        TODO()
     }
 
 }

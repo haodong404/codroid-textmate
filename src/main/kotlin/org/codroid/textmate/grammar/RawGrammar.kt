@@ -2,8 +2,7 @@ package org.codroid.textmate.grammar
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.codroid.textmate.RawCapturesMapSerializer
-import org.codroid.textmate.RawRepositorySerializer
+import org.codroid.textmate.IntBooleanSerializer
 import org.codroid.textmate.rule.RuleId
 import org.codroid.textmate.theme.ScopeName
 
@@ -19,8 +18,7 @@ abstract class Locatable() {
 data class RawGrammar(
     override val location: Location? = null,
 
-    @Serializable(with = RawRepositorySerializer::class)
-    val repository: RawRepository = RawRepository(map = RawRepositoryMap()),
+    val repository: RawRepository = RawRepository(),
     val scopeName: ScopeName,
     val patterns: Array<RawRule>,
     val injections: HashMap<String, RawRule>? = null,
@@ -78,13 +76,7 @@ data class RawGrammar(
 }
 
 // String: name
-typealias RawRepositoryMap = HashMap<String, RawRule>
-
-@Serializable
-data class RawRepository(
-    override var location: Location? = null,
-    var map: RawRepositoryMap? = null
-) : Locatable()
+typealias RawRepository = HashMap<String, RawRule>
 
 @Serializable
 data class RawRule(
@@ -99,35 +91,26 @@ data class RawRule(
 
     val match: String? = null,
 
-    @Serializable(with = RawCapturesMapSerializer::class)
     val captures: RawCaptures? = null,
     val begin: String? = null,
 
-    @Serializable(with = RawCapturesMapSerializer::class)
     val beginCaptures: RawCaptures? = null,
     val end: String? = null,
 
-    @Serializable(with = RawCapturesMapSerializer::class)
     val endCaptures: RawCaptures? = null,
 
     @SerialName("while")
     val while_: String? = null,
 
-    @Serializable(with = RawCapturesMapSerializer::class)
     val whileCaptures: RawCaptures? = null,
 
     var patterns: Array<RawRule>? = null,
 
-    @Serializable(with = RawRepositorySerializer::class)
     val repository: RawRepository? = null,
+
+    @Serializable(with = IntBooleanSerializer::class)
     val applyEndPatternLast: Boolean? = null
 ) : Locatable()
 
 // String: captureId
-typealias RawCapturesMap = HashMap<String, RawRule>
-
-@Serializable
-class RawCaptures(
-    override val location: Location? = null,
-    val map: RawCapturesMap? = null
-) : Locatable()
+typealias RawCaptures = HashMap<String, RawRule>

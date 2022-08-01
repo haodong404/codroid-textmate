@@ -48,14 +48,14 @@ interface WithPatternRule {
     val hasMissingPatterns: Boolean
 }
 
-abstract class Rule(
-    open val location: Location? = null,
-    open val id: RuleId,
-    open val name: String? = null,
-    open val contentName: String? = null
-) {
-    private val nameIsCapturing = RegexSource.hasCaptures(name)
-    private val contentNameIsCapturing = RegexSource.hasCaptures(contentName)
+abstract class Rule() {
+    abstract val location: Location?
+    abstract val id: RuleId
+    abstract val name: String?
+    abstract val contentName: String?
+
+    abstract val nameIsCapturing: Boolean
+    abstract val contentNameIsCapturing: Boolean
 
     abstract fun dispose()
 

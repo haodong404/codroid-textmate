@@ -29,9 +29,9 @@ class CompiledRule(
     fun findNextMatchSync(
         string: OnigString,
         startPosition: Int,
-        options: FindOption
+        option: FindOption
     ): FindNextMatchResult? {
-        val result = this.scanner.findNextMatchSync(string, startPosition, options) ?: return null
+        val result = this.scanner.findNextMatchSync(string, startPosition, option) ?: return null
         return FindNextMatchResult(ruleId = this.rules[result.index], captureIndices = result.captureIndices)
     }
 }

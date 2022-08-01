@@ -40,13 +40,10 @@ interface GrammarRepository {
 fun initGrammar(grammar: RawGrammar, base: RawRule?): RawGrammar {
     val grammarClone = grammar.clone()
     grammarClone.repository.let {
-        if (it.map == null) {
-            it.map = HashMap()
-        }
-        it.map!!["\$self"] = RawRule(
+        it["\$self"] = RawRule(
             location = grammarClone.location, patterns = grammarClone.patterns, name = grammarClone.scopeName
         )
-        it.map!!["\$base"] = base ?: it.map!!["\$self"]!!
+        it["\$base"] = base ?: it["\$self"]!!
     }
     return grammarClone
 }
@@ -116,7 +113,7 @@ class Grammar(
             if (rawInjections != null) {
                 for (expression in rawInjections.keys) {
                     collectInjections(
-                        result.toTypedArray(), expression, rawInjections[expression]!!, this, grammar
+                        result, expression, rawInjections[expression]!!, this, grammar
                     )
                 }
             }
@@ -129,7 +126,7 @@ class Grammar(
                     val selector = injectionGrammar.injectionSelector
                     if (selector != null) {
                         collectInjections(
-                            result.toTypedArray(), selector, injectionGrammar.toRule(), this, injectionGrammar
+                            result, selector, injectionGrammar.toRule(), this, injectionGrammar
                         )
                     }
                 }
@@ -188,8 +185,8 @@ class Grammar(
         } else {
             this.grammarRepository.lookup(scopeName)?.let {
                 val temp: RawRule? = if (repository != null) {
-                    if (repository.map?.containsKey("\$base") == true) {
-                        repository.map!!["\$base"]
+                    if (repository.containsKey("\$base")) {
+                        repository["\$base"]
                     } else {
                         null
                     }
@@ -221,7 +218,7 @@ class Grammar(
     ): TokenizeResult {
         if (this.rootId == RuleId.End) {
             this.rootId = RuleFactory.getCompiledRuleId(
-                this.grammar.repository.map!!["\$self"]!!, this, this.grammar.repository
+                this.grammar.repository["\$self"]!!, this, this.grammar.repository
             )
         }
 
@@ -272,18 +269,17 @@ fun nameMatcher(identifiers: List<ScopeName>, scopes: Array<ScopeName>): Boolean
         return false
     }
     var lastIndex = 0
-    identifiers.forEach {
-        var idx = lastIndex
-        while (idx < scopes.size) {
-            if (scopesAreMatching(scopes[idx], it)) {
-                lastIndex = idx + 1
-            } else {
-                return false
+    return identifiers.every { identifier ->
+        var i = lastIndex
+        while (i < scopes.size) {
+            if (scopesAreMatching(scopes[i], identifier)) {
+                lastIndex = i + 1
+                return@every true
             }
-            idx++
+            i++
         }
+        false
     }
-    return true
 }
 
 fun scopesAreMatching(thisScopeName: String, scopeName: String): Boolean {

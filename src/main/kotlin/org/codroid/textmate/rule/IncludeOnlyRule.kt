@@ -1,5 +1,6 @@
 package org.codroid.textmate.rule
 
+import org.codroid.textmate.RegexSource
 import org.codroid.textmate.grammar.Location
 
 class IncludeOnlyRule(
@@ -9,7 +10,11 @@ class IncludeOnlyRule(
     override val contentName: String?,
 
     patterns: CompilePatternsResult
-) : Rule(location, id, name, contentName), WithPatternRule {
+) : Rule(), WithPatternRule {
+    override val nameIsCapturing: Boolean = RegexSource.hasCaptures(name)
+    override val contentNameIsCapturing: Boolean = RegexSource.hasCaptures(contentName)
+
+
     override val patterns: Array<RuleId>
     override val hasMissingPatterns: Boolean
     private var cachedCompiledPatterns: RegExpSourceList?

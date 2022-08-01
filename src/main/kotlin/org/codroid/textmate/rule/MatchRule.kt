@@ -1,15 +1,18 @@
 package org.codroid.textmate.rule
 
+import org.codroid.textmate.RegexSource
 import org.codroid.textmate.grammar.Location
 
 class MatchRule(
     override val location: Location?,
     override val id: RuleId,
     override val name: String?,
-
+    override val contentName: String? = null,
     match: String,
     val captures: Array<CaptureRule?>
-) : Rule(location, id, name, null) {
+) : Rule() {
+    override val nameIsCapturing: Boolean = RegexSource.hasCaptures(name)
+    override val contentNameIsCapturing: Boolean = RegexSource.hasCaptures(contentName)
     private var cachedCompiledPatterns: RegExpSourceList? = null
     private val match = RegExpSource(match, this.id)
     override fun dispose() {

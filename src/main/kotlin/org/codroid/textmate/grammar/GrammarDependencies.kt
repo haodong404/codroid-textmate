@@ -132,7 +132,7 @@ fun collectExternalReferencesInTopLevelRepositoryRule(
     result: ExternalReferenceCollector
 ) {
     context.repository?.let {
-        val temp = it.map?.get(ruleName)
+        val temp = it[ruleName]
         if (temp != null) {
             collectExternalReferencesInRules(arrayOf(temp), context, result)
         }
@@ -171,10 +171,8 @@ fun collectExternalReferencesInRules(
         result.visitedRule.add(rule)
 
         val patternRepository = if (rule.repository != null) {
-            val temp = rule.repository.map?.plus(context.repository?.map ?: emptyMap())
-            RawRepository(
-                map = RawRepositoryMap(temp)
-            )
+            val temp = rule.repository.plus(context.repository ?: emptyMap())
+            RawRepository(temp)
         } else {
             context.repository
         }

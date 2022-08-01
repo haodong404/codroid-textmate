@@ -4,7 +4,6 @@ import org.codroid.textmate.*
 import org.codroid.textmate.EncodedTokenAttributes.set
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.RawRepository
-import org.codroid.textmate.grammar.RawRepositoryMap
 import org.codroid.textmate.grammar.RawRule
 import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.oniguruma.OnigScanner
@@ -403,14 +402,12 @@ class GrammarTest {
         val grammar = registry.addGrammar(
             rawGrammar = RawGrammar(
                 scopeName = "source.test",
-                repository = RawRepository(
-                    map = RawRepositoryMap().apply {
-                        this["foo"] = RawRule(
-                            include = "#bar"
-                        )
-                        this["bar"] = RawRule(match = "bar1", name = "outer")
-                    }
-                ), patterns = arrayOf(
+                repository = RawRepository().apply {
+                    this["foo"] = RawRule(
+                        include = "#bar"
+                    )
+                    this["bar"] = RawRule(match = "bar1", name = "outer")
+                }, patterns = arrayOf(
                     // When you move this up, the test passes
                     RawRule(
                         begin = "begin",
@@ -419,14 +416,13 @@ class GrammarTest {
                     ),
                     RawRule(
                         patterns = arrayOf(RawRule(include = "#foo")),
-                        repository = RawRepository(
-                            map = RawRepositoryMap().apply {
-                                this["bar"] = RawRule(
-                                    match = "bar1",
-                                    name = "inner"
-                                )
-                            }
-                        )
+                        repository = RawRepository().apply {
+                            this["bar"] = RawRule(
+                                match = "bar1",
+                                name = "inner"
+                            )
+                        }
+
                     )
 
                 )

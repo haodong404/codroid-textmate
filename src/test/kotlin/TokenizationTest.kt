@@ -1,21 +1,19 @@
+import com.dd.plist.PropertyListParser
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.codroid.textmate.*
 import org.codroid.textmate.exceptions.TextMateException
-import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.StateStack
 import org.codroid.textmate.oniguruma.getDefaultOnigLib
-import org.codroid.textmate.theme.ScopeName
-import java.nio.charset.StandardCharsets
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import kotlin.math.min
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
 
 @Serializable
 data class RawTest(
@@ -108,12 +106,12 @@ class TokenizationTest {
                 it.scopes
             )
         }.toTypedArray()
-
         if (testCase.line.isNotEmpty()) {
             testCase.tokens = testCase.tokens.filter {
                 it.value.isNotEmpty()
             }.toTypedArray()
         }
+
 
         assertContentEquals(testCase.tokens, actualTokens, "Tokenizing line ${testCase.line}")
         return actual.ruleStack

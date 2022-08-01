@@ -1,5 +1,6 @@
 package org.codroid.textmate.rule
 
+import org.codroid.textmate.RegexSource
 import org.codroid.textmate.grammar.Location
 import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
@@ -15,7 +16,9 @@ class BeginEndRule(
     val endCaptures: Array<CaptureRule?>,
     val applyEndPatternLast: Boolean = false,
     patterns: CompilePatternsResult
-) : Rule(location, id, name, contentName), WithPatternRule {
+) : Rule(), WithPatternRule {
+    override val nameIsCapturing: Boolean = RegexSource.hasCaptures(name)
+    override val contentNameIsCapturing: Boolean = RegexSource.hasCaptures(contentName)
 
     private val begin: RegExpSource = RegExpSource(begin, this.id)
     private val end: RegExpSource = RegExpSource(end ?: "\uFFFF", RuleId.End)

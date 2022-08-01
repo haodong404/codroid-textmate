@@ -24,7 +24,7 @@ class BasicScopesAttributeProvider(initialLanguageId: Int, embeddedLanguages: Em
 
     fun getBasicScopeAttributes(scopeName: ScopeName?): BasicScopeAttributes {
         if (scopeName == null) return NULL_SCOPE_METADATA
-        return getDefaultAttributes()
+        return getBasicScopeAttributes.get(scopeName)
     }
 
     private val getBasicScopeAttributes = CachedFn<ScopeName, BasicScopeAttributes> {

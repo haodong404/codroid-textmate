@@ -14,7 +14,6 @@ import kotlin.test.assertEquals
 @Serializable
 data class RawGrammarTest(
     val name: String, val scopeName: ScopeName,
-    @Serializable(with = RepositorySerializer::class)
     val repository: RawRepository
 )
 
@@ -25,19 +24,6 @@ data class RawRule(val name: String? = null, val beginCaptures: Map<String, Capt
 
 @Serializable
 data class Captures(val name: String? = null)
-
-object RepositorySerializer : JsonTransformingSerializer<RawRepository>(RawRepository.serializer()) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        if (element is JsonObject) {
-            return JsonObject(
-                mapOf(
-                    Pair("map", element)
-                )
-            )
-        }
-        return element
-    }
-}
 
 class ParseTest {
 
@@ -58,14 +44,14 @@ class ParseTest {
             val syntax = parseJson<RawGrammar>(input)
             assertEquals("C++", syntax.name)
             assertEquals("source.cpp", syntax.scopeName)
-            assertEquals("meta.block.cpp", syntax.repository!!.map!!["block"]!!.name)
+            assertEquals("meta.block.cpp", syntax.repository["block"]!!.name)
             assertEquals(
                 "support.function.any-method.c",
-                syntax.repository!!.map?.get("block")?.patterns?.getOrNull(0)?.captures?.map?.get("1")?.name
+                syntax.repository["block"]?.patterns?.getOrNull(0)?.captures?.get("1")?.name
             )
             assertEquals(
                 "punctuation.definition.parameters.c",
-                syntax.repository!!.map?.get("block")?.patterns?.getOrNull(0)?.captures?.map?.get("2")?.name
+                syntax.repository["block"]?.patterns?.getOrNull(0)?.captures?.get("2")?.name
             )
         }
     }
