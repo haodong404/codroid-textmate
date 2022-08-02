@@ -1,16 +1,16 @@
 package org.codroid.textmate.rule
 
 import org.codroid.textmate.oniguruma.FindOption
-import org.codroid.textmate.oniguruma.OnigLib
-import org.codroid.textmate.oniguruma.OnigString
+import org.codroid.textmate.regex.RegexLib
+import org.codroid.textmate.regex.RegexString
 
 class CompiledRule(
-    onigLib: OnigLib,
+    onigLib: RegexLib,
     private val regExps: Array<String>,
     private val rules: Array<RuleId>
 ) {
 
-    private val scanner = onigLib.createOnigScanner(regExps)
+    private val scanner = onigLib.createScanner(regExps)
 
     fun dispose() {
         this.scanner.dispose()
@@ -27,11 +27,11 @@ class CompiledRule(
     }
 
     fun findNextMatchSync(
-        string: OnigString,
+        string: RegexString,
         startPosition: Int,
         option: FindOption
     ): FindNextMatchResult? {
-        val result = this.scanner.findNextMatchSync(string, startPosition, option) ?: return null
-        return FindNextMatchResult(ruleId = this.rules[result.index], captureIndices = result.captureIndices)
+        val result = this.scanner.findNextMatchSync(string, startPosition) ?: return null
+        return FindNextMatchResult(ruleId = this.rules[result.index], captureIndices = result.ranges)
     }
 }

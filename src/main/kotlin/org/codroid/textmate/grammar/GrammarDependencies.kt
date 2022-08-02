@@ -171,7 +171,7 @@ fun collectExternalReferencesInRules(
         result.visitedRule.add(rule)
 
         val patternRepository = if (rule.repository != null) {
-            val temp = rule.repository.plus(context.repository ?: emptyMap())
+            val temp = rule.repository!!.plus(context.repository ?: emptyMap())
             RawRepository(temp)
         } else {
             context.repository

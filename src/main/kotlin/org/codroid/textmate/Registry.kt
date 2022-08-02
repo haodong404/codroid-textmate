@@ -1,7 +1,7 @@
 package org.codroid.textmate
 
 import org.codroid.textmate.grammar.*
-import org.codroid.textmate.oniguruma.OnigLib
+import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.ScopeStack
 import org.codroid.textmate.theme.StyleAttributes
@@ -13,7 +13,7 @@ import org.codroid.textmate.theme.Theme
  *     src/registry.ts#L11</a>
  */
 class SyncRegistry(
-    var theme: Theme, val onigLib: OnigLib
+    var theme: Theme, val regexLib: RegexLib
 ) : GrammarReposThemeProvider {
 
     private val grammars = mutableMapOf<ScopeName, Grammar>()
@@ -70,7 +70,7 @@ class SyncRegistry(
             val rawGrammar = this.rawGrammars[scopeName] ?: return null
             this.grammars[scopeName] = createGrammar(
                 scopeName, rawGrammar, initialLanguage, embeddedLanguages, tokenTypes, balancedBracketSelectors, this,
-                this.onigLib
+                this.regexLib
             )
         }
         return this.grammars[scopeName]

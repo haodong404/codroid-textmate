@@ -7,12 +7,11 @@ interface RuleFactoryHelper : RuleRegistry, GrammarRegistry
 object RuleFactory {
     fun createCaptureRule(
         helper: RuleFactoryHelper,
-        location: Location? = null,
         name: String? = null,
         contentName: String? = null,
         retokenizeCaptureWithRuleId: RuleId = RuleId.from(0)
     ): CaptureRule = helper.registerRule {
-        return@registerRule CaptureRule(location, it, name, contentName, retokenizeCaptureWithRuleId)
+        return@registerRule CaptureRule(it, name, contentName, retokenizeCaptureWithRuleId)
     }
 
     fun getCompiledRuleId(desc: RawRule, helper: RuleFactoryHelper, repository: RawRepository): RuleId {
@@ -21,37 +20,33 @@ object RuleFactory {
                 desc.id = it
                 if (desc.match != null) {
                     return@registerRule MatchRule(
-                        location = desc.location,
                         id = desc.id!!, name = desc.name,
-                        match = desc.match,
+                        match = desc.match!!,
                         captures = compileCaptures(desc.captures, helper, repository)
                     )
                 }
                 if (desc.begin == null) {
                     if (desc.repository != null) {
-                        repository.putAll(desc.repository)
+                        repository.putAll(desc.repository!!)
                     }
                     var patterns = desc.patterns
                     if (patterns == null && desc.include != null) {
                         patterns = arrayOf(RawRule(include = desc.include))
                     }
-                    return@registerRule IncludeOnlyRule(
-                        desc.location, desc.id!!, desc.name, desc.contentName,
+                    return@registerRule IncludeOnlyRule(desc.id!!, desc.name, desc.contentName,
                         compilePatterns(patterns, helper, repository)
                     )
                 }
 
                 if (desc.while_ != null) {
-                    return@registerRule BeginWhileRule(
-                        desc.location, desc.id!!, desc.name, desc.contentName,
-                        desc.begin, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
-                        desc.while_, compileCaptures(desc.whileCaptures ?: desc.captures, helper, repository),
+                    return@registerRule BeginWhileRule( desc.id!!, desc.name, desc.contentName,
+                        desc.begin!!, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
+                        desc.while_!!, compileCaptures(desc.whileCaptures ?: desc.captures, helper, repository),
                         compilePatterns(desc.patterns, helper, repository)
                     )
                 }
-                return@registerRule BeginEndRule(
-                    desc.location, desc.id!!, desc.name, desc.contentName,
-                    desc.begin, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
+                return@registerRule BeginEndRule(desc.id!!, desc.name, desc.contentName,
+                    desc.begin!!, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
                     desc.end, compileCaptures(desc.endCaptures ?: desc.captures, helper, repository),
                     desc.applyEndPatternLast ?: false, compilePatterns(desc.patterns, helper, repository)
                 )
@@ -97,7 +92,7 @@ object RuleFactory {
                     }
                     captures[captureId]?.let { c ->
                         result[it] =
-                            createCaptureRule(helper, c.location, c.name, c.contentName, retokenizeCapturedWithRuleId)
+                            createCaptureRule(helper, c.name, c.contentName, retokenizeCapturedWithRuleId)
                     }
                 }
             }
@@ -116,7 +111,7 @@ object RuleFactory {
             for (pattern in patterns) {
                 var ruleId = RuleId.End
                 if (pattern.include != null) {
-                    val reference = parseInclude(pattern.include)
+                    val reference = parseInclude(pattern.include!!)
                     when (reference) {
                         is BaseReference,
                         is SelfReference -> ruleId = getCompiledRuleId(

@@ -3,16 +3,19 @@ package org.codroid.textmate.grammar.tokenize
 import org.codroid.textmate.DebugFlag
 import org.codroid.textmate.Priority
 import org.codroid.textmate.UseOnigurumaFindOptions
+import org.codroid.textmate.distance
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.Injection
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.oniguruma.*
+import org.codroid.textmate.oniguruma.FindOption
+import org.codroid.textmate.oniguruma.FindOptionConsts
+import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.*
 import kotlin.experimental.or
 import kotlin.math.min
 
-open class MatchResult(open val captureIndices: Array<OnigCaptureIndex>, open val matchedRuleId: RuleId) {
+open class MatchResult(open val captureIndices: Array<IntRange>, open val matchedRuleId: RuleId) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -34,7 +37,7 @@ open class MatchResult(open val captureIndices: Array<OnigCaptureIndex>, open va
 
 class MatchInjectionsResult(
     val priorityMatch: Boolean,
-    override val captureIndices: Array<OnigCaptureIndex>,
+    override val captureIndices: Array<IntRange>,
     override val matchedRuleId: RuleId
 ) : MatchResult(captureIndices, matchedRuleId) {
     override fun equals(other: Any?): Boolean {
@@ -63,7 +66,7 @@ data class PrepareRuleResult(val ruleScanner: CompiledRule, val findOptions: Fin
 object RuleMatching {
     fun matchRuleOrInjections(
         grammar: Grammar,
-        lineText: OnigString,
+        lineText: RegexString,
         isFirstLine: Boolean,
         linePos: Int,
         stack: StateStack,
@@ -90,8 +93,8 @@ object RuleMatching {
         }
 
         // Decide if `matchResult` or `injectionResult` should win
-        val matchResultScore = matchResult.captureIndices[0].start
-        val injectionResultScore = injectionResult.captureIndices[0].start
+        val matchResultScore = matchResult.captureIndices[0].first
+        val injectionResultScore = injectionResult.captureIndices[0].first
 
         if (injectionResultScore < matchResultScore || (injectionResult.priorityMatch && injectionResultScore == matchResultScore)) {
             // injection won!
@@ -102,7 +105,7 @@ object RuleMatching {
 
     private fun matchRule(
         grammar: Grammar,
-        lineText: OnigString,
+        lineText: RegexString,
         isFirstLine: Boolean,
         linePos: Int,
         stack: StateStack,
@@ -130,7 +133,7 @@ object RuleMatching {
             println("  scanning for (linePos: $linePos, anchorPosition: $anchorPosition")
             println(ruleScanner.toString())
             if (result != null) {
-                println("matched rule id: ${result.ruleId} from ${result.captureIndices[0].start} to ${result.captureIndices[0].end}")
+                println("matched rule id: ${result.ruleId} from ${result.captureIndices[0].first} to ${result.captureIndices[0].last}")
             }
         }
 
@@ -143,7 +146,7 @@ object RuleMatching {
     private fun matchInjections(
         injections: Array<Injection>,
         grammar: Grammar,
-        lineText: OnigString,
+        lineText: RegexString,
         isFirstLine: Boolean,
         linePos: Int,
         stack: StateStack,
@@ -151,7 +154,7 @@ object RuleMatching {
     ): MatchInjectionsResult? {
         // The lower the better
         var bestMatchRating = Int.MAX_VALUE
-        var bestMatchCaptureIndices: Array<OnigCaptureIndex>? = null
+        var bestMatchCaptureIndices: Array<IntRange>? = null
         var bestMatchRuleId: RuleId = RuleId.from(0)
         var bestMatchResultPriority: Priority = 0
 
@@ -173,7 +176,7 @@ object RuleMatching {
             if (DebugFlag) {
                 println("  matched injection: ${injection.debugSelector}")
             }
-            val matchRating = matchResult.captureIndices[0].start
+            val matchRating = matchResult.captureIndices[0].first
             if (matchRating >= bestMatchRating) {
                 // Injections are sorted by priority, so the previous injection had a better or equal priority
                 continue
@@ -238,12 +241,12 @@ object RuleMatching {
 
     fun handleCaptures(
         grammar: Grammar,
-        lineText: OnigString,
+        lineText: RegexString,
         isFirstLine: Boolean,
         stack: StateStack,
         lineTokens: LineTokens,
         captures: Array<CaptureRule?>,
-        captureIndices: Array<OnigCaptureIndex>
+        captureIndices: Array<IntRange>
     ) {
         if (captures.isEmpty()) return
 
@@ -251,32 +254,32 @@ object RuleMatching {
 
         val len = min(captures.size, captureIndices.size)
         val localStack = mutableListOf<LocalStackElement>()
-        val maxEnd = captureIndices.first().end
+        val maxEnd = captureIndices.first().last
 
         for (i in 0 until len) {
             val captureRule = captures[i] ?: continue
 
             val captureIndex = captureIndices[i]
-            if (captureIndex.length == 0) {
+            if (captureIndex.distance() == 0) {
                 // Nothing really captured
                 continue
             }
 
-            if (captureIndex.start > maxEnd) {
+            if (captureIndex.first > maxEnd) {
                 // Capture going beyond consumed string
                 break
             }
             // pop captures while needed
-            while (localStack.isNotEmpty() && localStack.last().endPos <= captureIndex.start) {
+            while (localStack.isNotEmpty() && localStack.last().endPos <= captureIndex.first) {
                 // pop!
                 lineTokens.produceFromScopes(localStack.last().scopes, localStack.last().endPos)
                 localStack.removeLast()
             }
 
             if (localStack.isNotEmpty()) {
-                lineTokens.produceFromScopes(localStack.last().scopes, captureIndex.start)
+                lineTokens.produceFromScopes(localStack.last().scopes, captureIndex.first)
             } else {
-                lineTokens.produce(stack, captureIndex.start)
+                lineTokens.produce(stack, captureIndex.first)
             }
 
             if (captureRule.retokenizeCapturedWithRuleId != RuleId.from(0)) {
@@ -287,15 +290,14 @@ object RuleMatching {
                 val contentNameScopesList = nameScopesList.pushAttributed(contentName, grammar)
 
                 val stackClone = stack.push(
-                    captureRule.retokenizeCapturedWithRuleId, captureIndex.start,
+                    captureRule.retokenizeCapturedWithRuleId, captureIndex.first,
                     -1, false, null, nameScopesList, contentNameScopesList
                 )
-                val onigSubStr = grammar.createOnigString(lineTextContent.substring(0, captureIndex.end))
+                val onigSubStr = grammar.createString(lineTextContent.substring(0, captureIndex.last))
                 tokenizeString(
-                    grammar, onigSubStr, isFirstLine && captureIndex.start == 0, captureIndex.start,
+                    grammar, onigSubStr, isFirstLine && captureIndex.first == 0, captureIndex.first,
                     stackClone, lineTokens, false, 0
                 )
-                disposeOnigString(onigSubStr)
                 continue
             }
             val captureRuleScopeName = captureRule.getName(lineTextContent, captureIndices)
@@ -303,7 +305,7 @@ object RuleMatching {
                 // push
                 val base = if (localStack.isNotEmpty()) localStack.last().scopes else stack.contentNameScopesList
                 val captureRuleScopesList = base.pushAttributed(captureRuleScopeName, grammar)
-                localStack.add(LocalStackElement(captureRuleScopesList, captureIndex.end))
+                localStack.add(LocalStackElement(captureRuleScopesList, captureIndex.last))
             }
         }
 

@@ -1,7 +1,6 @@
 import kotlinx.serialization.Serializable
 import org.codroid.textmate.EncodedTokenAttributes
 import org.codroid.textmate.Tokenizer
-import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.StateStack
 
 @Serializable

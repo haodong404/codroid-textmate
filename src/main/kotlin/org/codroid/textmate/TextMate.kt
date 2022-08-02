@@ -5,6 +5,7 @@ import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.ScopeDependencyProcessor
 import org.codroid.textmate.grammar.StateStack
 import org.codroid.textmate.oniguruma.OnigLib
+import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.theme.RawTheme
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.Theme
@@ -18,7 +19,7 @@ import org.codroid.textmate.theme.Theme
 typealias EmbeddedLanguagesMap = HashMap<ScopeName, Int>
 
 open class RegistryOptions(
-    open val onigLib: OnigLib,
+    open val regexLib: RegexLib,
     val theme: RawTheme? = null,
     val colorMap: Array<String>? = null,
     val loadGrammar: (suspend (scopeName: ScopeName) -> RawGrammar?)? = null,
@@ -84,7 +85,7 @@ data class GrammarConfiguration(
  */
 class Registry(val options: RegistryOptions) {
     private val syncRegistry: SyncRegistry = SyncRegistry(
-        Theme.createFromRawTheme(options.theme, options.colorMap), options.onigLib
+        Theme.createFromRawTheme(options.theme, options.colorMap), options.regexLib
     )
 
     private val ensureGrammarCache = HashMap<String, Boolean>()

@@ -1,10 +1,8 @@
 package org.codroid.textmate.rule
 
 import org.codroid.textmate.RegexSource
-import org.codroid.textmate.grammar.Location
 
 class IncludeOnlyRule(
-    override val location: Location?,
     override val id: RuleId,
     override val name: String?,
     override val contentName: String?,
@@ -38,17 +36,17 @@ class IncludeOnlyRule(
         }
     }
 
-    override fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String): CompiledRule =
+    override fun compile(grammar: RuleRegistryRegexLib, endRegexSource: String): CompiledRule =
         this.getCachedCompiledPatterns(grammar).compile(grammar)
 
     override fun compileAG(
-        grammar: RuleRegistryOnigLib,
+        grammar: RuleRegistryRegexLib,
         endRegexSource: String,
         allowA: Boolean,
         allowG: Boolean
     ): CompiledRule = this.getCachedCompiledPatterns(grammar).compileAG(grammar, allowA, allowG)
 
-    private fun getCachedCompiledPatterns(grammar: RuleRegistryOnigLib): RegExpSourceList {
+    private fun getCachedCompiledPatterns(grammar: RuleRegistryRegexLib): RegExpSourceList {
         if (this.cachedCompiledPatterns == null) {
             this.cachedCompiledPatterns = RegExpSourceList()
             this.collectPatterns(grammar, this.cachedCompiledPatterns!!)

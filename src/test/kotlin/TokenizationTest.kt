@@ -1,14 +1,11 @@
-import com.dd.plist.PropertyListParser
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.codroid.textmate.*
 import org.codroid.textmate.exceptions.TextMateException
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.oniguruma.getDefaultOnigLib
+import org.codroid.textmate.oniguruma.getDefaultRegexLib
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import kotlin.math.min
@@ -139,7 +136,7 @@ class TokenizationTest {
             }
 
             val options = RegistryOptions(
-                onigLib = getDefaultOnigLib(),
+                regexLib = getDefaultRegexLib(),
                 loadGrammar = { grammarByScope[it] },
                 getInjections = {
                     if (it == grammarScopeName) {
@@ -181,7 +178,7 @@ class TokenizationTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `Test suite1, while Tests json`() = runTest {
-        assertTokenizationSuite("suite1/whileTest.json")
+        assertTokenizationSuite("suite1/whileTests.json")
     }
 }
 

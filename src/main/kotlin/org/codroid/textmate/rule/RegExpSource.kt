@@ -1,7 +1,6 @@
 package org.codroid.textmate.rule
 
 import org.codroid.textmate.escapeRegExpCharacters
-import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
 class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
     var source: String = ""
@@ -68,9 +67,9 @@ class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
         return RegExpSource(this.source, this.ruleId)
     }
 
-    fun resolveBackReferences(lineText: String, captureIndices: Array<OnigCaptureIndex>): String {
+    fun resolveBackReferences(lineText: String, captureIndices: Array<IntRange>): String {
         val captureValues = captureIndices.map {
-            lineText.substring(it.start, it.end)
+            lineText.substring(it.first, it.last)
         }
         return this.source.replace(BACK_REFERENCING_END) {
             return@replace escapeRegExpCharacters(captureValues.getOrElse(it.groupValues[1].toInt()) { "" })

@@ -2,9 +2,6 @@ package org.codroid.textmate.rule
 
 import kotlinx.serialization.Serializable
 import org.codroid.textmate.RegexSource
-import org.codroid.textmate.basename
-import org.codroid.textmate.grammar.Location
-import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
 val HAS_BACK_REFERENCES = Regex("""\\(\d+)""")
 val BACK_REFERENCING_END = Regex("""\\(\d+)""")
@@ -49,7 +46,6 @@ interface WithPatternRule {
 }
 
 abstract class Rule() {
-    abstract val location: Location?
     abstract val id: RuleId
     abstract val name: String?
     abstract val contentName: String?
@@ -60,19 +56,17 @@ abstract class Rule() {
     abstract fun dispose()
 
     fun debugName(): String {
-        val locate =
-            if (this.location != null) "${basename(this.location!!.filename)}:${this.location!!.line}" else "unknown"
-        return "${this.name}#${this.id} @ $locate"
+        return "${this.name}#${this.id}"
     }
 
-    fun getName(lineText: String?, captureIndices: Array<OnigCaptureIndex>?): String? {
+    fun getName(lineText: String?, captureIndices: Array<IntRange>?): String? {
         if (!this.nameIsCapturing || this.name == null || lineText == null || captureIndices == null) {
             return this.name
         }
         return RegexSource.replaceCaptures(this.name!!, lineText, captureIndices)
     }
 
-    fun getContentName(lineText: String, captureIndices: Array<OnigCaptureIndex>): String? {
+    fun getContentName(lineText: String, captureIndices: Array<IntRange>): String? {
         if (!this.contentNameIsCapturing || this.contentName == null) {
             return this.contentName
         }
@@ -81,10 +75,10 @@ abstract class Rule() {
 
     abstract fun collectPatterns(grammar: RuleRegistry, out: RegExpSourceList)
 
-    abstract fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String): CompiledRule
+    abstract fun compile(grammar: RuleRegistryRegexLib, endRegexSource: String): CompiledRule
 
     abstract fun compileAG(
-        grammar: RuleRegistryOnigLib,
+        grammar: RuleRegistryRegexLib,
         endRegexSource: String,
         allowA: Boolean,
         allowG: Boolean

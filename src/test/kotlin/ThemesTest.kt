@@ -1,6 +1,6 @@
 import org.codroid.textmate.*
 import org.codroid.textmate.exceptions.TextMateException
-import org.codroid.textmate.oniguruma.getDefaultOnigLib
+import org.codroid.textmate.oniguruma.getDefaultRegexLib
 import org.codroid.textmate.theme.*
 import java.io.File
 import kotlin.experimental.or
@@ -82,7 +82,7 @@ class ThemesTest {
 
         val languages =
             parseJson<Array<LanguageRegistration>>(themeFile("languages.json")!!.inputStream())
-        val resolver = Resolver(getDefaultOnigLib(), grammars, languages)
+        val resolver = Resolver(getDefaultRegexLib(), grammars, languages)
         val themeData = themeInfos.map { it.create(resolver) }
         // Discover all tests
         var testFiles = themeFile("tests/")?.listFiles()

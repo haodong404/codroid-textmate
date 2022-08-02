@@ -1,6 +1,6 @@
 package org.codroid.textmate.rule
 
-import org.codroid.textmate.oniguruma.OnigLib
+import org.codroid.textmate.regex.RegexLib
 
 class RegExpSourceList(
     val items: MutableList<RegExpSource> = mutableListOf(),
@@ -55,7 +55,7 @@ class RegExpSourceList(
         }
     }
 
-    fun compile(onigLib: OnigLib): CompiledRule {
+    fun compile(onigLib: RegexLib): CompiledRule {
         if (this.cached == null) {
             val regExps = this.items.map { it.source }
             this.cached = CompiledRule(onigLib, regExps.toTypedArray(), this.items.map { it.ruleId }.toTypedArray())
@@ -63,7 +63,7 @@ class RegExpSourceList(
         return this.cached!!
     }
 
-    fun compileAG(onigLib: OnigLib, allowA: Boolean, allowG: Boolean): CompiledRule {
+    fun compileAG(onigLib: RegexLib, allowA: Boolean, allowG: Boolean): CompiledRule {
         if (!this.hasAnchors) {
             return this.compile(onigLib)
         } else {
@@ -95,7 +95,7 @@ class RegExpSourceList(
         }
     }
 
-    private fun resolveAnchors(onigLib: OnigLib, allowA: Boolean, allowG: Boolean): CompiledRule {
+    private fun resolveAnchors(onigLib: RegexLib, allowA: Boolean, allowG: Boolean): CompiledRule {
         this.items.map { it.resolveAnchors(allowA, allowG) }.let {
             return CompiledRule(onigLib, it.toTypedArray(), this.items.map { e -> e.ruleId }.toTypedArray())
         }

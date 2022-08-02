@@ -4,6 +4,7 @@ import org.codroid.textmate.exceptions.TextMateException
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.parseRawGrammar
+import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.theme.ScopeName
 
 @Serializable
@@ -43,9 +44,9 @@ data class GrammarRegistration(
 )
 
 class Resolver(
-    override val onigLib: OnigLib,
+    override val regexLib: RegexLib,
     val grammars: Array<GrammarRegistration>, val languages: Array<LanguageRegistration>
-) : RegistryOptions(onigLib) {
+) : RegistryOptions(regexLib) {
     val language2id = mutableMapOf<String, Int>()
     val id2language = mutableMapOf<Int, String>()
     private var lastLanguageId = 0

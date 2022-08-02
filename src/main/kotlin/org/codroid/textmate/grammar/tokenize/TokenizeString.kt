@@ -4,7 +4,7 @@ import org.codroid.textmate.DebugFlag
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.oniguruma.OnigString
+import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.BeginEndRule
 import org.codroid.textmate.rule.BeginWhileRule
 import org.codroid.textmate.rule.MatchRule
@@ -24,7 +24,7 @@ import org.codroid.textmate.rule.RuleId
  */
 fun tokenizeString(
     grammar: Grammar,
-    lineText: OnigString,
+    lineText: RegexString,
     isFirstLine_: Boolean,
     linePos_: Int,
     stack_: StateStack,
@@ -76,7 +76,7 @@ fun tokenizeString(
 
         val captureIndices = result.captureIndices
         val matchedRuleId = result.matchedRuleId
-        val hasAdvanced = if (captureIndices.isNotEmpty()) captureIndices[0].end > linePosClone else false
+        val hasAdvanced = if (captureIndices.isNotEmpty()) captureIndices[0].last > linePosClone else false
 
         if (matchedRuleId == RuleId.End) {
             // We matched the `end` for this rule => pop it
@@ -84,13 +84,13 @@ fun tokenizeString(
             if (DebugFlag) {
                 println("  popping ${poppedRule.debugName()} - ${poppedRule.debugEndRegExp()}")
             }
-            lineTokens.produce(stackClone, captureIndices[0].start)
+            lineTokens.produce(stackClone, captureIndices[0].first)
             stackClone = stackClone.withContentNameScopesList(stackClone.nameScopesList)
             RuleMatching.handleCaptures(
                 grammar, lineText, isFirstLineClone, stackClone, lineTokens,
                 poppedRule.endCaptures, captureIndices
             )
-            lineTokens.produce(stackClone, captureIndices[0].end)
+            lineTokens.produce(stackClone, captureIndices[0].last)
 
             // pop
             val popped = stackClone
@@ -112,13 +112,13 @@ fun tokenizeString(
         } else {
             // We matched a rule!
             val rule = grammar.getRule(matchedRuleId)
-            lineTokens.produce(stackClone, captureIndices[0].start)
+            lineTokens.produce(stackClone, captureIndices[0].first)
             val beforePush = stackClone
             // push it on the stack rule
             val scopeName = rule?.getName(lineText.content, captureIndices)
             val nameScopesList = stackClone.contentNameScopesList.pushAttributed(scopeName, grammar)
             stackClone = stackClone.push(
-                matchedRuleId, linePosClone, anchorPosition, captureIndices[0].end == lineLength,
+                matchedRuleId, linePosClone, anchorPosition, captureIndices[0].last == lineLength,
                 null, nameScopesList, nameScopesList
             )
             when (rule) {
@@ -135,8 +135,8 @@ fun tokenizeString(
                         rule.beginCaptures,
                         captureIndices
                     )
-                    lineTokens.produce(stackClone, captureIndices[0].end)
-                    anchorPosition = captureIndices[0].end
+                    lineTokens.produce(stackClone, captureIndices[0].last)
+                    anchorPosition = captureIndices[0].last
                     val contentName = rule.getContentName(lineText.content, captureIndices)
                     val contentNameScopesList = nameScopesList.pushAttributed(contentName, grammar)
                     stackClone = stackClone.withContentNameScopesList(contentNameScopesList)
@@ -167,8 +167,8 @@ fun tokenizeString(
                         grammar, lineText, isFirstLineClone, stackClone, lineTokens,
                         rule.beginCaptures, captureIndices
                     )
-                    lineTokens.produce(stackClone, captureIndices[0].end)
-                    anchorPosition = captureIndices[0].end
+                    lineTokens.produce(stackClone, captureIndices[0].last)
+                    anchorPosition = captureIndices[0].last
                     val contentName = rule.getContentName(lineText.content, captureIndices)
                     val contentNameScopesList = nameScopesList.pushAttributed(contentName, grammar)
                     stackClone = stackClone.withContentNameScopesList(contentNameScopesList)
@@ -209,7 +209,7 @@ fun tokenizeString(
                         matchingRule.captures,
                         captureIndices
                     )
-                    lineTokens.produce(stackClone, captureIndices[0].end)
+                    lineTokens.produce(stackClone, captureIndices[0].last)
 
                     // pop rule immediately since it is a MatchRule
                     stackClone = stackClone.pop()!!
@@ -229,9 +229,9 @@ fun tokenizeString(
             }
         }
 
-        if (captureIndices[0].end > linePosClone) {
+        if (captureIndices[0].last > linePosClone) {
             // Advance stream
-            linePosClone = captureIndices[0].end
+            linePosClone = captureIndices[0].last
             isFirstLineClone = false
         }
     }

@@ -4,7 +4,7 @@ import org.codroid.textmate.DebugFlag
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.oniguruma.OnigString
+import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.BeginWhileRule
 import org.codroid.textmate.rule.RuleId
 
@@ -15,7 +15,7 @@ import org.codroid.textmate.rule.RuleId
  */
 fun checkWhileConditions(
     grammar: Grammar,
-    lineText: OnigString,
+    lineText: RegexString,
     isFirstLine_: Boolean,
     linePos_: Int,
     stack_: StateStack,
@@ -57,15 +57,15 @@ fun checkWhileConditions(
                 break
             }
             if (result.captureIndices.isNotEmpty()) {
-                lineTokens.produce(whileRule.first, result.captureIndices[0].start)
+                lineTokens.produce(whileRule.first, result.captureIndices[0].first)
                 RuleMatching.handleCaptures(
                     grammar, lineText, isFirstLine, whileRule.first, lineTokens,
                     whileRule.second.whileCaptures, result.captureIndices
                 )
-                lineTokens.produce(whileRule.first, result.captureIndices[0].end)
-                anchorPosition = result.captureIndices[0].end
-                if (result.captureIndices[0].end > linePos) {
-                    linePos = result.captureIndices[0].end
+                lineTokens.produce(whileRule.first, result.captureIndices[0].last)
+                anchorPosition = result.captureIndices[0].last
+                if (result.captureIndices[0].last > linePos) {
+                    linePos = result.captureIndices[0].last
                     isFirstLine = false
                 }
             }

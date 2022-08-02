@@ -1,11 +1,8 @@
 package org.codroid.textmate.rule
 
 import org.codroid.textmate.RegexSource
-import org.codroid.textmate.grammar.Location
-import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
 class BeginWhileRule(
-    override val location: Location?,
     override val id: RuleId,
     override val name: String?,
     override val contentName: String?,
@@ -43,24 +40,24 @@ class BeginWhileRule(
 
     fun debugWhileRegExp(): String = this._while.source
 
-    fun getWhileWithResolvedBackReferences(lineText: String, captureIndices: Array<OnigCaptureIndex>): String =
+    fun getWhileWithResolvedBackReferences(lineText: String, captureIndices: Array<IntRange>): String =
         this._while.resolveBackReferences(lineText, captureIndices)
 
     override fun collectPatterns(grammar: RuleRegistry, out: RegExpSourceList) {
         out.push(this.begin)
     }
 
-    override fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String): CompiledRule =
+    override fun compile(grammar: RuleRegistryRegexLib, endRegexSource: String): CompiledRule =
         this.getCachedCompiledPatterns(grammar).compile(grammar)
 
     override fun compileAG(
-        grammar: RuleRegistryOnigLib,
+        grammar: RuleRegistryRegexLib,
         endRegexSource: String,
         allowA: Boolean,
         allowG: Boolean
     ): CompiledRule = this.getCachedCompiledPatterns(grammar).compileAG(grammar, allowA, allowG)
 
-    private fun getCachedCompiledPatterns(grammar: RuleRegistryOnigLib): RegExpSourceList {
+    private fun getCachedCompiledPatterns(grammar: RuleRegistryRegexLib): RegExpSourceList {
         if (this.cachedCompiledPatterns == null) {
             this.cachedCompiledPatterns = RegExpSourceList()
             for (pattern in this.patterns) {
@@ -70,18 +67,18 @@ class BeginWhileRule(
         return this.cachedCompiledPatterns!!
     }
 
-    fun compileWhile(grammar: RuleRegistryOnigLib, endRegexSource: String?): CompiledRule =
+    fun compileWhile(grammar: RuleRegistryRegexLib, endRegexSource: String?): CompiledRule =
         this.getCachedCompiledWhilePatterns(grammar, endRegexSource).compile(grammar)
 
     fun compileWhileAG(
-        grammar: RuleRegistryOnigLib,
+        grammar: RuleRegistryRegexLib,
         endRegexSource: String?,
         allowA: Boolean,
         allowG: Boolean
     ): CompiledRule = this.getCachedCompiledWhilePatterns(grammar, endRegexSource).compileAG(grammar, allowA, allowG)
 
     private fun getCachedCompiledWhilePatterns(
-        grammar: RuleRegistryOnigLib,
+        grammar: RuleRegistryRegexLib,
         endRegexSource: String?
     ): RegExpSourceList {
         if (this.cachedCompiledWhilePatterns == null) {

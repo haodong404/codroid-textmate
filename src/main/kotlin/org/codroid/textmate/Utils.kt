@@ -8,11 +8,11 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.*
-import org.codroid.textmate.grammar.RawCaptures
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromStream
 import org.codroid.textmate.grammar.RawGrammar
-import org.codroid.textmate.grammar.RawRepository
-import org.codroid.textmate.oniguruma.OnigCaptureIndex
 import java.io.InputStream
 
 fun basename(path: String): String {
@@ -39,7 +39,7 @@ object RegexSource {
     }
 
     fun replaceCaptures(
-        regexSource: String, captureSource: String, captureIndices: Array<OnigCaptureIndex>
+        regexSource: String, captureSource: String, captureIndices: Array<IntRange>
     ): String {
         return regexSource.replace(CAPTURING_REGEX_SOURCE) {
             val capture = captureIndices.getOrNull(
@@ -48,7 +48,7 @@ object RegexSource {
                 )
             )
             return@replace if (capture != null) {
-                var result = captureSource.substring(capture.start, capture.end)
+                var result = captureSource.substring(capture.first, capture.last)
                 // Remove leading dots that would make the selector invalid
                 while (result[0] == '.') {
                     result = result.substring(1)
@@ -160,12 +160,11 @@ object IntBooleanSerializer : KSerializer<Boolean> {
         try {
             intDecoded = decoder.decodeInt()
         } catch (_: Exception) {
-
         }
 
         try {
             boolDecoded = decoder.decodeBoolean()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
         return if (intDecoded != null) {
             when (intDecoded) {
@@ -228,3 +227,5 @@ fun <T> List<T>.some(test: (value: T) -> Boolean): Boolean {
     }
     return false
 }
+
+fun IntRange.distance(): Int = this.last - this.first

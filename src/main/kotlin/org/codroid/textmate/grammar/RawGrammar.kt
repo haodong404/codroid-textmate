@@ -16,63 +16,26 @@ abstract class Locatable() {
 
 @Serializable
 data class RawGrammar(
-    override val location: Location? = null,
+    var repository: RawRepository = RawRepository(),
+    var scopeName: ScopeName = "",
+    var patterns: Array<RawRule> = arrayOf(),
+    var injections: HashMap<String, RawRule>? = null,
+    var injectionSelector: String? = null,
 
-    val repository: RawRepository = RawRepository(),
-    val scopeName: ScopeName,
-    val patterns: Array<RawRule>,
-    val injections: HashMap<String, RawRule>? = null,
-    val injectionSelector: String? = null,
-
-    val fileTypes: Array<String>? = null,
-    val name: String? = null,
-    val firstLineMatch: String? = null,
-) : Locatable(), Cloneable {
+    var fileTypes: Array<String>? = null,
+    var name: String? = null,
+    var firstLineMatch: String? = null,
+) : Cloneable {
     fun toRule(): RawRule = RawRule(
-        location = this.location,
         name = this.name,
         patterns = this.patterns,
         repository = this.repository
     )
 
     public override fun clone(): RawGrammar = RawGrammar(
-        location, repository, scopeName, patterns, injections, injectionSelector, fileTypes, name, firstLineMatch
+        repository, scopeName, patterns, injections, injectionSelector, fileTypes, name, firstLineMatch
     )
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as RawGrammar
-
-        if (location != other.location) return false
-        if (repository != other.repository) return false
-        if (scopeName != other.scopeName) return false
-        if (!patterns.contentEquals(other.patterns)) return false
-        if (injections != other.injections) return false
-        if (injectionSelector != other.injectionSelector) return false
-        if (fileTypes != null) {
-            if (other.fileTypes == null) return false
-            if (!fileTypes.contentEquals(other.fileTypes)) return false
-        } else if (other.fileTypes != null) return false
-        if (name != other.name) return false
-        if (firstLineMatch != other.firstLineMatch) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = location?.hashCode() ?: 0
-        result = 31 * result + repository.hashCode()
-        result = 31 * result + scopeName.hashCode()
-        result = 31 * result + patterns.contentHashCode()
-        result = 31 * result + (injections?.hashCode() ?: 0)
-        result = 31 * result + (injectionSelector?.hashCode() ?: 0)
-        result = 31 * result + (fileTypes?.contentHashCode() ?: 0)
-        result = 31 * result + (name?.hashCode() ?: 0)
-        result = 31 * result + (firstLineMatch?.hashCode() ?: 0)
-        return result
-    }
 }
 
 // String: name
@@ -80,37 +43,40 @@ typealias RawRepository = HashMap<String, RawRule>
 
 @Serializable
 data class RawRule(
-    override val location: Location? = null,
-
     var id: RuleId? = null,
 
-    val include: String? = null,
+    var include: String? = null,
 
-    val name: String? = null,
-    val contentName: String? = null,
+    var name: String? = null,
+    var contentName: String? = null,
 
-    val match: String? = null,
+    var match: String? = null,
 
-    val captures: RawCaptures? = null,
-    val begin: String? = null,
+    var captures: RawCaptures? = null,
+    var begin: String? = null,
 
-    val beginCaptures: RawCaptures? = null,
-    val end: String? = null,
+    var beginCaptures: RawCaptures? = null,
+    var end: String? = null,
 
-    val endCaptures: RawCaptures? = null,
+    var endCaptures: RawCaptures? = null,
 
     @SerialName("while")
-    val while_: String? = null,
+    var while_: String? = null,
 
-    val whileCaptures: RawCaptures? = null,
+    var whileCaptures: RawCaptures? = null,
 
     var patterns: Array<RawRule>? = null,
 
-    val repository: RawRepository? = null,
+    var repository: RawRepository? = null,
 
+    /**
+     * There is a bug when converting PLIST file.
+     * 'applyEndPatternLast' is sometimes boolean and sometimes number.
+     * <a href="https://github.com/3breadt/dd-plist">3breadt/dd-plist<a/> cannot process it well, but json can.
+     */
     @Serializable(with = IntBooleanSerializer::class)
-    val applyEndPatternLast: Boolean? = null
-) : Locatable()
+    var applyEndPatternLast: Boolean? = null
+)
 
 // String: captureId
 typealias RawCaptures = HashMap<String, RawRule>

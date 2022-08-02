@@ -8,9 +8,11 @@ import org.codroid.textmate.grammar.RawRule
 import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.oniguruma.OnigScanner
 import org.codroid.textmate.oniguruma.OnigString
+import org.codroid.textmate.regex.RegexLib
+import org.codroid.textmate.regex.StandardRegex
+import org.codroid.textmate.regex.StandardResult
 import org.codroid.textmate.theme.FontStyle
 import org.codroid.textmate.theme.FontStyleConsts
-import org.codroid.textmate.theme.ScopeName
 import kotlin.experimental.or
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -389,15 +391,7 @@ class GrammarTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `Shadowed rules are resolved correctly`() = runTest {
-        val registry = Registry(RegistryOptions(onigLib = object : OnigLib {
-            override fun createOnigScanner(source: Array<String>): OnigScanner {
-                return OnigScanner(source)
-            }
-
-            override fun createOnigString(str: String): OnigString {
-                return OnigString.create(str)
-            }
-        }))
+        val registry = Registry(RegistryOptions(regexLib = StandardRegex()))
 
         val grammar = registry.addGrammar(
             rawGrammar = RawGrammar(

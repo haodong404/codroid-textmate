@@ -2,7 +2,7 @@ package org.codroid.textmate.rule
 
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.RawRepository
-import org.codroid.textmate.oniguruma.OnigLib
+import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.theme.ScopeName
 
 interface RuleRegistry {
@@ -14,6 +14,6 @@ interface GrammarRegistry {
     fun getExternalGrammar(scopeName: ScopeName, repository: RawRepository?): RawGrammar?
 }
 
-interface RuleRegistryOnigLib : RuleRegistry, OnigLib {
+interface RuleRegistryRegexLib : RuleRegistry, RegexLib {
 
 }

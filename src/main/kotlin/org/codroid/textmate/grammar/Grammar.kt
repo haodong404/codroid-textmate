@@ -2,10 +2,9 @@ package org.codroid.textmate.grammar
 
 import org.codroid.textmate.*
 import org.codroid.textmate.grammar.tokenize.tokenizeString
-import org.codroid.textmate.oniguruma.OnigLib
-import org.codroid.textmate.oniguruma.OnigScanner
-import org.codroid.textmate.oniguruma.OnigString
-import org.codroid.textmate.oniguruma.disposeOnigString
+import org.codroid.textmate.regex.RegexLib
+import org.codroid.textmate.regex.RegexScanner
+import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.*
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.ThemeProvider
@@ -18,7 +17,7 @@ fun createGrammar(
     tokenTypes: TokenTypeMap?,
     balancedBracketSelectors: BalancedBracketSelectors?,
     grammarRepository: GrammarReposThemeProvider,
-    onigLib: OnigLib
+    regexLib: RegexLib
 ): Grammar = Grammar(
     scopeName,
     grammar,
@@ -27,7 +26,7 @@ fun createGrammar(
     tokenTypes,
     balancedBracketSelectors,
     grammarRepository,
-    onigLib
+    regexLib
 )
 
 interface GrammarReposThemeProvider : GrammarRepository, ThemeProvider
@@ -41,7 +40,7 @@ fun initGrammar(grammar: RawGrammar, base: RawRule?): RawGrammar {
     val grammarClone = grammar.clone()
     grammarClone.repository.let {
         it["\$self"] = RawRule(
-            location = grammarClone.location, patterns = grammarClone.patterns, name = grammarClone.scopeName
+            patterns = grammarClone.patterns, name = grammarClone.scopeName
         )
         it["\$base"] = base ?: it["\$self"]!!
     }
@@ -56,8 +55,8 @@ class Grammar(
     tokenTypes: TokenTypeMap?,
     private val balancedBracketSelectors: BalancedBracketSelectors?,
     private val grammarRepository: GrammarReposThemeProvider,
-    private val onigLib: OnigLib
-) : Tokenizer, RuleFactoryHelper, OnigLib, RuleRegistryOnigLib {
+    private val regexLib: RegexLib
+) : Tokenizer, RuleFactoryHelper, RegexLib, RuleRegistryRegexLib {
 
     private var rootId = RuleId.End
     private var lastRuleId = RuleId.from(0)
@@ -202,9 +201,9 @@ class Grammar(
         }
     }
 
-    override fun createOnigScanner(source: Array<String>): OnigScanner = this.onigLib.createOnigScanner(source)
+    override fun createScanner(source: Array<String>): RegexScanner = this.regexLib.createScanner(source)
 
-    override fun createOnigString(str: String): OnigString = this.onigLib.createOnigString(str)
+    override fun createString(str: String): RegexString = this.regexLib.createString(str)
 
     data class TokenizeResult(
         val lineLength: Int,
@@ -252,13 +251,13 @@ class Grammar(
             newPreState = prevState
         }
         val newLineText = lineText + "\n"
-        val onigLineText = this.createOnigString(newLineText)
+        val onigLineText = this.createString(newLineText)
         val lineLength = onigLineText.content.length
         val lineTokens = LineTokens(
             emitBinaryTokens, newLineText, this.tokenTypeMatchers.toTypedArray(), this.balancedBracketSelectors
         )
         val result = tokenizeString(this, onigLineText, isFirstLine, 0, newPreState, lineTokens, true, timeLimit)
-        disposeOnigString(onigLineText)
+
         return TokenizeResult(lineLength, lineTokens, result.stack, result.stoppedEarly)
     }
 

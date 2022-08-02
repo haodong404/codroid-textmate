@@ -1,5 +1,8 @@
 package org.codroid.textmate.oniguruma
 
+import org.codroid.textmate.regex.RegexLib
+import org.codroid.textmate.regex.StandardRegex
+
 interface OnigLib {
     fun createOnigScanner(source: Array<String>): OnigScanner
     fun createOnigString(str: String): OnigString
@@ -54,10 +57,6 @@ object FindOptionConsts {
 }
 
 
-fun disposeOnigString(str: OnigString) {
-    str.dispose()
-}
-
 class DefaultOnigLib : OnigLib {
     override fun createOnigScanner(source: Array<String>): OnigScanner {
         return OnigScanner(source)
@@ -69,6 +68,6 @@ class DefaultOnigLib : OnigLib {
 
 }
 
-fun getDefaultOnigLib(): DefaultOnigLib {
-    return DefaultOnigLib()
+fun getDefaultRegexLib(): RegexLib {
+    return StandardRegex()
 }

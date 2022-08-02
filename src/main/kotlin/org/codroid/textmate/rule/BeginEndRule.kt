@@ -1,11 +1,8 @@
 package org.codroid.textmate.rule
 
 import org.codroid.textmate.RegexSource
-import org.codroid.textmate.grammar.Location
-import org.codroid.textmate.oniguruma.OnigCaptureIndex
 
 class BeginEndRule(
-    override val location: Location?,
     override val id: RuleId,
     override val name: String?,
     override val contentName: String?,
@@ -37,24 +34,24 @@ class BeginEndRule(
 
     fun debugEndRegExp(): String = this.end.source
 
-    fun getEndWithResolvedBackReferences(lineText: String, captureIndices: Array<OnigCaptureIndex>): String =
+    fun getEndWithResolvedBackReferences(lineText: String, captureIndices: Array<IntRange>): String =
         this.end.resolveBackReferences(lineText, captureIndices)
 
     override fun collectPatterns(grammar: RuleRegistry, out: RegExpSourceList) {
         out.push(this.begin)
     }
 
-    override fun compile(grammar: RuleRegistryOnigLib, endRegexSource: String): CompiledRule =
+    override fun compile(grammar: RuleRegistryRegexLib, endRegexSource: String): CompiledRule =
         this.getCachedCompiledPatterns(grammar, endRegexSource ?: "").compile(grammar)
 
     override fun compileAG(
-        grammar: RuleRegistryOnigLib,
+        grammar: RuleRegistryRegexLib,
         endRegexSource: String,
         allowA: Boolean,
         allowG: Boolean
     ): CompiledRule = this.getCachedCompiledPatterns(grammar, endRegexSource).compileAG(grammar, allowA, allowG)
 
-    private fun getCachedCompiledPatterns(grammar: RuleRegistryOnigLib, endRegexSource: String): RegExpSourceList {
+    private fun getCachedCompiledPatterns(grammar: RuleRegistryRegexLib, endRegexSource: String): RegExpSourceList {
         if (this.cachedCompiledPatterns == null) {
             this.cachedCompiledPatterns = RegExpSourceList()
             for (pattern in this.patterns) {

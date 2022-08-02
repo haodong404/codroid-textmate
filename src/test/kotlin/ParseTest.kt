@@ -1,9 +1,7 @@
+import com.dd.plist.NSDictionary
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonTransformingSerializer
+import org.codroid.textmate.IntBooleanSerializer
 import org.codroid.textmate.grammar.RawGrammar
-import org.codroid.textmate.grammar.RawRepository
 import org.codroid.textmate.parseJson
 import org.codroid.textmate.parsePLIST
 import org.codroid.textmate.theme.RawTheme
@@ -11,10 +9,10 @@ import org.codroid.textmate.theme.ScopeName
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@Serializable
 data class RawGrammarTest(
-    val name: String, val scopeName: ScopeName,
-    val repository: RawRepository
+    var name: String? = null, var scopeName: ScopeName = "",
+    var repository: NSDictionary? = null
+//    val repository: RawRepository? = null
 )
 
 data class RawRepository(val map: Map<String, RawRule>)
