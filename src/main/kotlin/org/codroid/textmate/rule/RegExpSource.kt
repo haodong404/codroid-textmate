@@ -69,7 +69,7 @@ class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
 
     fun resolveBackReferences(lineText: String, captureIndices: Array<IntRange>): String {
         val captureValues = captureIndices.map {
-            lineText.substring(it.first, it.last)
+            lineText.substring(it)
         }
         return this.source.replace(BACK_REFERENCING_END) {
             return@replace escapeRegExpCharacters(captureValues.getOrElse(it.groupValues[1].toInt()) { "" })

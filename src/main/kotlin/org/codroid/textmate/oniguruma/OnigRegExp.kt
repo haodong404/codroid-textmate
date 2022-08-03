@@ -29,7 +29,7 @@ class OnigRegExp(source: String) {
         )
     }
 
-    fun search(str: OnigString, position: Int, option: FindOption): OnigResult? {
+    fun search(str: OnigString, position: Int): OnigResult? {
         val theLastSearchResult = lastSearchResult
         if (lastSearchString == str && lastSearchPosition <= position &&
             (theLastSearchResult == null || theLastSearchResult.locationAt(0) >= position)
@@ -38,13 +38,13 @@ class OnigRegExp(source: String) {
         }
         lastSearchString = str
         lastSearchPosition = position
-        lastSearchResult = search(str.bytesUTF8, position, str.bytesCount, option)
+        lastSearchResult = search(str.bytesUTF8, position, str.bytesCount)
         return lastSearchResult
     }
 
-    private fun search(data: ByteArray, position: Int, end: Int, option: FindOption): OnigResult? {
+    private fun search(data: ByteArray, position: Int, end: Int): OnigResult? {
         val matcher = regex.matcher(data)
-        val status = matcher.search(position, end, option.toInt())
+        val status = matcher.search(position, end, 0)
         if (status != Matcher.FAILED) {
             val region = matcher.eagerRegion
             return OnigResult(region, -1)

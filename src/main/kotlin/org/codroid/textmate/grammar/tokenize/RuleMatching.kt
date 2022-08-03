@@ -1,9 +1,6 @@
 package org.codroid.textmate.grammar.tokenize
 
-import org.codroid.textmate.DebugFlag
-import org.codroid.textmate.Priority
-import org.codroid.textmate.UseOnigurumaFindOptions
-import org.codroid.textmate.distance
+import org.codroid.textmate.*
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.Injection
 import org.codroid.textmate.grammar.LineTokens
@@ -133,7 +130,7 @@ object RuleMatching {
             println("  scanning for (linePos: $linePos, anchorPosition: $anchorPosition")
             println(ruleScanner.toString())
             if (result != null) {
-                println("matched rule id: ${result.ruleId} from ${result.captureIndices[0].first} to ${result.captureIndices[0].last}")
+                println("matched rule id: ${result.ruleId} from ${result.captureIndices[0]}")
             }
         }
 
@@ -254,7 +251,7 @@ object RuleMatching {
 
         val len = min(captures.size, captureIndices.size)
         val localStack = mutableListOf<LocalStackElement>()
-        val maxEnd = captureIndices.first().last
+        val maxEnd = captureIndices.first().endExclusive()
 
         for (i in 0 until len) {
             val captureRule = captures[i] ?: continue
@@ -293,7 +290,7 @@ object RuleMatching {
                     captureRule.retokenizeCapturedWithRuleId, captureIndex.first,
                     -1, false, null, nameScopesList, contentNameScopesList
                 )
-                val onigSubStr = grammar.createString(lineTextContent.substring(0, captureIndex.last))
+                val onigSubStr = grammar.createString(lineTextContent.substring(0, captureIndex.endExclusive()))
                 tokenizeString(
                     grammar, onigSubStr, isFirstLine && captureIndex.first == 0, captureIndex.first,
                     stackClone, lineTokens, false, 0
@@ -305,7 +302,7 @@ object RuleMatching {
                 // push
                 val base = if (localStack.isNotEmpty()) localStack.last().scopes else stack.contentNameScopesList
                 val captureRuleScopesList = base.pushAttributed(captureRuleScopeName, grammar)
-                localStack.add(LocalStackElement(captureRuleScopesList, captureIndex.last))
+                localStack.add(LocalStackElement(captureRuleScopesList, captureIndex.endExclusive()))
             }
         }
 

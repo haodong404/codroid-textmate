@@ -1,11 +1,14 @@
 package org.codroid.textmate.regex
 
+import org.codroid.textmate.DebugFlag
+import java.util.regex.PatternSyntaxException
+
 class StandardRegex : RegexLib {
     override fun createScanner(source: Array<String>): RegexScanner {
         return StandardRegexScanner(source)
     }
 
-    override fun createString(str: String): RegexString {
+    override fun createString(str: String): StandardRegexString {
         return StandardRegexString(str)
     }
 }
@@ -37,7 +40,7 @@ class StandardRegexMatch(
 
     private fun captureRanges(result: StandardResult): Array<IntRange> {
         return result.matchResult.groups.map {
-            it!!.range
+            it?.range ?: IntRange(0, -1)
         }.toTypedArray()
     }
 }
@@ -49,18 +52,14 @@ data class StandardResult(val matchResult: MatchResult, var indexInScanner: Int)
 
 class StandardSearcher(patterns: Array<String>) {
 
-    private val regexes = patterns.map { Regex(it) }
-
-    private var lastSearchString: RegexString? = null
-    private var lastSearchPosition = -1
-    private var lastSearchResult: StandardResult? = null
+    private val regexes = patterns.map { RegexExp(it) }
 
     fun search(source: RegexString, offset: Int): StandardResult? {
         var bestLocation = 0
         var bestResult: StandardResult? = null
         for ((idx, regex) in regexes.withIndex()) {
-            val result = search_(regex, source, offset)
-            if (result != null) {
+            val result = regex.search(source, offset)
+            if (result != null && result.count > 0) {
                 val location = result.matchResult.range.first
                 if (bestResult == null || location < bestLocation) {
                     bestLocation = location
@@ -74,8 +73,24 @@ class StandardSearcher(patterns: Array<String>) {
         }
         return bestResult
     }
+}
 
-    private fun search_(regex: Regex, str: RegexString, position: Int): StandardResult? {
+class RegexExp(pattern: String) {
+
+    private var lastSearchString: RegexString? = null
+    private var lastSearchPosition = -1
+    private var lastSearchResult: StandardResult? = null
+
+    private val regex = try {
+        Regex(pattern)
+    } catch (e: PatternSyntaxException) {
+        if (true) {
+            System.err.println("An illegal regular expression was found: ${e.pattern}")
+        }
+        null
+    }
+
+    fun search(str: RegexString, position: Int): StandardResult? {
         val theLastSearchResult = lastSearchResult
         if (lastSearchString == str && lastSearchPosition <= position &&
             (theLastSearchResult == null || theLastSearchResult.matchResult.range.first >= position)
@@ -84,7 +99,7 @@ class StandardSearcher(patterns: Array<String>) {
         }
         lastSearchString = str
         lastSearchPosition = position
-        val found = regex.find(str.content)
+        val found = regex?.find(str.content, position)
         lastSearchResult = if (found != null) {
             StandardResult(found, -1)
         } else {
@@ -92,4 +107,5 @@ class StandardSearcher(patterns: Array<String>) {
         }
         return lastSearchResult
     }
+
 }

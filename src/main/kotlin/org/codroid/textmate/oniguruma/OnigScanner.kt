@@ -1,14 +1,19 @@
 package org.codroid.textmate.oniguruma
 
-class OnigScanner(patterns: Array<String>) {
+import org.codroid.textmate.regex.RegexMatch
+import org.codroid.textmate.regex.RegexScanner
+import org.codroid.textmate.regex.RegexString
+
+class OnigScanner(patterns: Array<String>) : RegexScanner {
 
     private val searcher = OnigSearcher(patterns)
 
-    fun findNextMatchSync(string: OnigString, startPosition: Int, option: FindOption): OnigMatch? {
-        return OnigMatch(searcher.search(string, startPosition, option) ?: return null, string)
+    override fun findNextMatchSync(string: RegexString, startPosition: Int): RegexMatch? {
+        return OnigMatch(searcher.search(string as OnigString, startPosition) ?: return null, string)
     }
 
-    fun dispose() {
+    override fun dispose() {
 
     }
+
 }

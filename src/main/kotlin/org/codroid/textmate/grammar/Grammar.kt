@@ -250,7 +250,7 @@ class Grammar(
             prevState.reset()
             newPreState = prevState
         }
-        val newLineText = lineText + "\n"
+        val newLineText = "$lineText\n"
         val onigLineText = this.createString(newLineText)
         val lineLength = onigLineText.content.length
         val lineTokens = LineTokens(

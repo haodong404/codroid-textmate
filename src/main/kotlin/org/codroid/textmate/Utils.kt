@@ -48,7 +48,7 @@ object RegexSource {
                 )
             )
             return@replace if (capture != null) {
-                var result = captureSource.substring(capture.first, capture.last)
+                var result = captureSource.substring(capture)
                 // Remove leading dots that would make the selector invalid
                 while (result[0] == '.') {
                     result = result.substring(1)
@@ -228,4 +228,6 @@ fun <T> List<T>.some(test: (value: T) -> Boolean): Boolean {
     return false
 }
 
-fun IntRange.distance(): Int = this.last - this.first
+fun IntRange.endExclusive(): Int = this.last + 1
+
+fun IntRange.distance(): Int = this.endExclusive() - this.first

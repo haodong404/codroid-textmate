@@ -1,29 +1,19 @@
 package org.codroid.textmate.oniguruma
 
-import org.codroid.textmate.regex.RegexLib
-import org.codroid.textmate.regex.StandardRegex
+import org.codroid.textmate.regex.*
 
-interface OnigLib {
-    fun createOnigScanner(source: Array<String>): OnigScanner
-    fun createOnigString(str: String): OnigString
-}
+class OnigMatch(result: OnigResult, source: OnigString) : RegexMatch {
+    override val index: Int = result.indexInScanner
+    override val ranges: Array<IntRange> = captureIndicesOfMatch(result, source);
 
-data class OnigCaptureIndex(val index: Int, val start: Int, val end: Int) {
-    val length = this.end - this.start
-}
-
-class OnigMatch(result: OnigResult, source: OnigString) {
-    val index: Int = result.indexInScanner
-    val captureIndices: Array<OnigCaptureIndex> = captureIndicesOfMatch(result, source);
-
-    private fun captureIndicesOfMatch(result: OnigResult, source: OnigString): Array<OnigCaptureIndex> {
+    private fun captureIndicesOfMatch(result: OnigResult, source: OnigString): Array<IntRange> {
         val resultCount = result.count()
-        val captures = mutableListOf<OnigCaptureIndex>()
+        val captures = mutableListOf<IntRange>()
         for (i in 0 until resultCount) {
             val loc = result.locationAt(i)
             val captureStart = source.getCharIndexOfByte(loc)
             val captureEnd = source.getCharIndexOfByte(loc + result.lengthAt(i))
-            captures.add(OnigCaptureIndex(i, captureStart, captureEnd))
+            captures.add(IntRange(captureStart, captureEnd - 1))
         }
         return captures.toTypedArray()
     }
@@ -57,17 +47,17 @@ object FindOptionConsts {
 }
 
 
-class DefaultOnigLib : OnigLib {
-    override fun createOnigScanner(source: Array<String>): OnigScanner {
+class OnigLib : RegexLib {
+    override fun createScanner(source: Array<String>): RegexScanner {
         return OnigScanner(source)
     }
 
-    override fun createOnigString(str: String): OnigString {
+    override fun createString(str: String): RegexString {
         return OnigString.create(str)
     }
 
 }
 
 fun getDefaultRegexLib(): RegexLib {
-    return StandardRegex()
+    return OnigLib()
 }

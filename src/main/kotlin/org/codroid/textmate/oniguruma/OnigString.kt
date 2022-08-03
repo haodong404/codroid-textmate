@@ -1,12 +1,13 @@
 package org.codroid.textmate.oniguruma
 
+import org.codroid.textmate.regex.RegexString
 import org.jcodings.specific.UTF8Encoding
 import java.nio.charset.StandardCharsets
 import java.util.*
 
 abstract class OnigString(
-    open val content: String, open val bytesUTF8: ByteArray
-) {
+    override val content: String, open val bytesUTF8: ByteArray
+) : RegexString {
     val bytesCount by lazy {
         bytesUTF8.size
     }

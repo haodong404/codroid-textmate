@@ -1,6 +1,7 @@
 package org.codroid.textmate.grammar.tokenize
 
 import org.codroid.textmate.DebugFlag
+import org.codroid.textmate.endExclusive
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
@@ -62,10 +63,10 @@ fun checkWhileConditions(
                     grammar, lineText, isFirstLine, whileRule.first, lineTokens,
                     whileRule.second.whileCaptures, result.captureIndices
                 )
-                lineTokens.produce(whileRule.first, result.captureIndices[0].last)
-                anchorPosition = result.captureIndices[0].last
-                if (result.captureIndices[0].last > linePos) {
-                    linePos = result.captureIndices[0].last
+                lineTokens.produce(whileRule.first, result.captureIndices[0].endExclusive())
+                anchorPosition = result.captureIndices[0].endExclusive()
+                if (result.captureIndices[0].endExclusive() > linePos) {
+                    linePos = result.captureIndices[0].endExclusive()
                     isFirstLine = false
                 }
             }
