@@ -16,15 +16,15 @@ abstract class Locatable() {
 
 @Serializable
 data class RawGrammar(
-    var repository: RawRepository = RawRepository(),
-    var scopeName: ScopeName = "",
-    var patterns: Array<RawRule> = arrayOf(),
-    var injections: HashMap<String, RawRule>? = null,
-    var injectionSelector: String? = null,
+    val repository: RawRepository = RawRepository(),
+    val scopeName: ScopeName = "",
+    val patterns: Array<RawRule> = arrayOf(),
+    val injections: HashMap<String, RawRule>? = null,
+    val injectionSelector: String? = null,
 
-    var fileTypes: Array<String>? = null,
-    var name: String? = null,
-    var firstLineMatch: String? = null,
+    val fileTypes: Array<String>? = null,
+    val name: String? = null,
+    val firstLineMatch: String? = null,
 ) : Cloneable {
     fun toRule(): RawRule = RawRule(
         name = this.name,
@@ -45,29 +45,29 @@ typealias RawRepository = HashMap<String, RawRule>
 data class RawRule(
     var id: RuleId? = null,
 
-    var include: String? = null,
+    val include: String? = null,
 
-    var name: String? = null,
-    var contentName: String? = null,
+    val name: String? = null,
+    val contentName: String? = null,
 
-    var match: String? = null,
+    val match: String? = null,
 
-    var captures: RawCaptures? = null,
-    var begin: String? = null,
+    val captures: RawCaptures? = null,
+    val begin: String? = null,
 
-    var beginCaptures: RawCaptures? = null,
-    var end: String? = null,
+    val beginCaptures: RawCaptures? = null,
+    val end: String? = null,
 
-    var endCaptures: RawCaptures? = null,
+    val endCaptures: RawCaptures? = null,
 
     @SerialName("while")
-    var while_: String? = null,
+    val while_: String? = null,
 
-    var whileCaptures: RawCaptures? = null,
+    val whileCaptures: RawCaptures? = null,
 
-    var patterns: Array<RawRule>? = null,
+    val patterns: Array<RawRule>? = null,
 
-    var repository: RawRepository? = null,
+    val repository: RawRepository? = null,
 
     /**
      * There is a bug when converting PLIST file.
@@ -75,7 +75,7 @@ data class RawRule(
      * <a href="https://github.com/3breadt/dd-plist">3breadt/dd-plist<a/> cannot process it well, but json can.
      */
     @Serializable(with = IntBooleanSerializer::class)
-    var applyEndPatternLast: Boolean? = null
+    val applyEndPatternLast: Boolean? = null
 )
 
 // String: captureId

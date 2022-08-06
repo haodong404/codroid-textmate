@@ -21,13 +21,13 @@ object RuleFactory {
                 if (desc.match != null) {
                     return@registerRule MatchRule(
                         id = desc.id!!, name = desc.name,
-                        match = desc.match!!,
+                        match = desc.match,
                         captures = compileCaptures(desc.captures, helper, repository)
                     )
                 }
                 if (desc.begin == null) {
                     if (desc.repository != null) {
-                        repository.putAll(desc.repository!!)
+                        repository.putAll(desc.repository)
                     }
                     var patterns = desc.patterns
                     if (patterns == null && desc.include != null) {
@@ -40,13 +40,13 @@ object RuleFactory {
 
                 if (desc.while_ != null) {
                     return@registerRule BeginWhileRule( desc.id!!, desc.name, desc.contentName,
-                        desc.begin!!, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
-                        desc.while_!!, compileCaptures(desc.whileCaptures ?: desc.captures, helper, repository),
+                        desc.begin, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
+                        desc.while_, compileCaptures(desc.whileCaptures ?: desc.captures, helper, repository),
                         compilePatterns(desc.patterns, helper, repository)
                     )
                 }
                 return@registerRule BeginEndRule(desc.id!!, desc.name, desc.contentName,
-                    desc.begin!!, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
+                    desc.begin, compileCaptures(desc.beginCaptures ?: desc.captures, helper, repository),
                     desc.end, compileCaptures(desc.endCaptures ?: desc.captures, helper, repository),
                     desc.applyEndPatternLast ?: false, compilePatterns(desc.patterns, helper, repository)
                 )
@@ -111,7 +111,7 @@ object RuleFactory {
             for (pattern in patterns) {
                 var ruleId = RuleId.End
                 if (pattern.include != null) {
-                    val reference = parseInclude(pattern.include!!)
+                    val reference = parseInclude(pattern.include)
                     when (reference) {
                         is BaseReference,
                         is SelfReference -> ruleId = getCompiledRuleId(

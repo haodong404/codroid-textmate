@@ -1,3 +1,8 @@
+@file:OptIn(
+    ExperimentalSerializationApi::class, ExperimentalSerializationApi::class,
+    ExperimentalSerializationApi::class, ExperimentalSerializationApi::class, ExperimentalSerializationApi::class
+)
+
 package org.codroid.textmate
 
 import com.dd.plist.NSArray
@@ -11,10 +16,10 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
-import java.util.Dictionary
 
 inline fun <reified T : Any> decodeFromNSObject(dict: NSObject): T = decodeFromNSObject(dict, serializer())
 
@@ -29,87 +34,65 @@ fun <T> decodeFromNSObject(
  * This decoder is used to convert NsObject to Kotlin entities.
  * It only supports [NSDictionary], [NSArray], [NSNumber], [NSString]
  */
-@OptIn(ExperimentalSerializationApi::class)
-private open class NSObjDecoder(
+internal open class NSObjDecoder(
     private val obj: NSObject,
     private val descriptor: SerialDescriptor,
 ) : AbstractDecoder() {
 
     override val serializersModule: SerializersModule = EmptySerializersModule
-    private var elementIndex = -1
+    protected var elementIndex = 0
     private var elementCount = descriptor.elementsCount
-    private var isCurrentNotNull = true
 
     override fun decodeNotNullMark(): Boolean {
-        val result = decodeValue() != "NULL"
-        if (result) {
-            elementIndex--
-        }
-        return result
+        return decodeValue() != "NULL"
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override fun decodeValue(): Any {
-        elementIndex++
-        isCurrentNotNull = true
-        return when (val current = currentElement()) {
-            is NSString -> {
-                current.content
-            }
+        val descriptorNow = descriptor.getElementDescriptor(indexNow())
+        val current = currentElement()
+        return decodeValue(current, descriptorNow.kind)
+    }
 
-            is NSNumber -> {
-                if (current.isBoolean) {
-                    return current.boolValue()
-                } else if (current.isInteger) {
-                    return current.intValue()
-                }
-                return current.stringValue()
-            }
+    protected fun decodeValue(nsObject: NSObject?, kind: SerialKind?): Any {
+        if (nsObject == null) return "NULL"
+        return when (kind) {
+            PrimitiveKind.STRING -> convString(nsObject)
+            PrimitiveKind.INT -> convInt(nsObject)
+            PrimitiveKind.LONG -> convLong(nsObject)
+            PrimitiveKind.FLOAT -> convFloat(nsObject)
+            PrimitiveKind.DOUBLE -> convDouble(nsObject)
+            PrimitiveKind.BOOLEAN -> convBoolean(nsObject)
 
-            else -> {
-                isCurrentNotNull = false
-                "NULL"
-            }
+            StructureKind.CLASS,
+            StructureKind.MAP,
+            StructureKind.OBJECT,
+            StructureKind.LIST -> nsObject
+
+            else -> "NULL"
         }
     }
 
-    override fun decodeFloat(): Float {
-        elementIndex++
-        currentElement()?.let {
-            if (it is NSNumber) {
-                return it.floatValue()
-            }
-        }
-        return 0.0F
-    }
+    protected fun convString(obj: NSObject): String = (obj as NSString).content
 
+    protected fun convInt(obj: NSObject): Int = (obj as NSNumber).intValue()
 
-    override fun decodeDouble(): Double {
-        elementIndex++
-        currentElement()?.let {
-            if (it is NSNumber) {
-                return it.doubleValue()
-            }
-        }
-        return 0.0
-    }
+    protected fun convLong(obj: NSObject): Long = (obj as NSNumber).longValue()
 
-    override fun decodeLong(): Long {
-        elementIndex++
-        currentElement()?.let {
-            if (it is NSNumber) {
-                return it.longValue()
-            }
-        }
-        return 0L
-    }
+    protected fun convFloat(obj: NSObject): Float = (obj as NSNumber).floatValue()
+
+    protected fun convDouble(obj: NSObject): Double = (obj as NSNumber).doubleValue()
+
+    protected fun convBoolean(obj: NSObject): Boolean = (obj as NSNumber).boolValue()
+
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (elementCount == elementIndex) return CompositeDecoder.DECODE_DONE
-        return elementIndex
+        return elementIndex++
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-        if (elementIndex != -1) elementIndex++
+        if (elementIndex == 0) return this
         val currentInput = currentElement() ?: obj
         if (descriptor.kind == StructureKind.LIST) {
             return ListDecoder(currentInput as NSArray, descriptor)
@@ -119,7 +102,7 @@ private open class NSObjDecoder(
         return NSObjDecoder(currentInput, descriptor)
     }
 
-    protected fun SerialDescriptor.getElementNameOrNull(index: Int): String? {
+    private fun SerialDescriptor.getElementNameOrNull(index: Int): String? {
         return try {
             this.getElementName(index)
         } catch (_: Exception) {
@@ -127,37 +110,47 @@ private open class NSObjDecoder(
         }
     }
 
-    private fun currentElement(): NSObject? {
-        return (obj as NSDictionary).hashMap[descriptor.getElementNameOrNull(elementIndex)]
-    }
-
-    override fun decodeSequentially(): Boolean = true
-
-    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
-        if (obj is NSDictionary) {
-            return obj.hashMap.size
-        } else if (obj is NSArray) {
-            return obj.array.size
+    fun currentElement(): NSObject? {
+        if (obj !is NSDictionary) {
+            return obj
         }
-        return 0
+        return obj.hashMap[descriptor.getElementNameOrNull(indexNow())]
     }
+
+    override fun decodeSequentially(): Boolean = false
+
+    protected fun indexNow(): Int {
+        return elementIndex - 1
+    }
+
 }
 
 private class ListDecoder(
     private val obj: NSArray, private val descriptor: SerialDescriptor
 ) : NSObjDecoder(obj, descriptor) {
 
-    var index = -1
+    private val elementKind = descriptor.elementDescriptors.firstOrNull()?.kind
 
-    @OptIn(ExperimentalSerializationApi::class)
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        if (index == descriptor.elementsCount) return CompositeDecoder.DECODE_DONE
-        return index
+        if (elementIndex == obj.count()) return CompositeDecoder.DECODE_DONE
+        return elementIndex++
     }
 
+    override fun decodeValue(): Any {
+        obj.array[indexNow()]?.let {
+            return decodeValue(it, elementKind)
+        }
+        return "NULL"
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-        index++
-        return NSObjDecoder(obj.array[index], descriptor)
+        val currentInput = obj.array[indexNow()]
+        return when (descriptor.kind) {
+            StructureKind.LIST -> ListDecoder(currentInput as NSArray, descriptor)
+            StructureKind.MAP -> MapDecoder(currentInput as NSDictionary, descriptor)
+            else -> NSObjDecoder(currentInput, descriptor)
+        }
     }
 
     override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
@@ -172,14 +165,45 @@ private class MapDecoder(
     private val dictIt = dict.hashMap.iterator()
     private var currentEntry: Map.Entry<String, NSObject>? = null
 
-    override fun decodeString(): String {
-        currentEntry = dictIt.next()
-        return currentEntry!!.key
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        if (elementIndex == dict.count() * 2) return CompositeDecoder.DECODE_DONE
+        if (elementIndex % 2 == 0 && dictIt.hasNext()) {
+            currentEntry = dictIt.next()
+        }
+        return elementIndex++
     }
 
-    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-        return NSObjDecoder(currentEntry!!.value, descriptor)
+    @OptIn(ExperimentalSerializationApi::class)
+    private inline fun <reified T> decodeValue(kind: PrimitiveKind): T {
+        return if (elementIndex % 2 != 0) {
+            currentEntry!!.key as T
+        } else {
+            decodeValue(currentEntry!!.value, kind) as T
+        }
     }
+
+    override fun decodeString(): String = decodeValue(PrimitiveKind.STRING)
+
+    override fun decodeInt(): Int = decodeValue(PrimitiveKind.INT)
+
+    override fun decodeLong(): Long = decodeValue(PrimitiveKind.LONG)
+
+    override fun decodeFloat(): Float = decodeValue(PrimitiveKind.FLOAT)
+
+    override fun decodeDouble(): Double = decodeValue(PrimitiveKind.DOUBLE)
+
+    override fun decodeBoolean(): Boolean = decodeValue(PrimitiveKind.BOOLEAN)
+
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
+        val currentInput = currentEntry!!.value
+        return when (descriptor.kind) {
+            StructureKind.LIST -> ListDecoder(currentInput as NSArray, descriptor)
+            StructureKind.MAP -> MapDecoder(currentInput as NSDictionary, descriptor)
+            else -> NSObjDecoder(currentInput, descriptor)
+        }
+    }
+
+    override fun decodeSequentially(): Boolean = false
 
     override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
         return dict.count()

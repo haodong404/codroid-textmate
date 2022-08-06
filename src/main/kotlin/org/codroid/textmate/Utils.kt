@@ -1,5 +1,8 @@
 package org.codroid.textmate
 
+import com.dd.plist.NSArray
+import com.dd.plist.NSDictionary
+import com.dd.plist.NSNumber
 import com.dd.plist.PropertyListParser
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -155,6 +158,9 @@ object IntBooleanSerializer : KSerializer<Boolean> {
         get() = PrimitiveSerialDescriptor("IntBoolean", PrimitiveKind.BOOLEAN)
 
     override fun deserialize(decoder: Decoder): Boolean {
+        if (decoder is NSObjDecoder) {
+            return deserializeWithNSObjectDecoder(decoder)
+        }
         var intDecoded: Int? = null
         var boolDecoded: Boolean? = null
         try {
@@ -176,6 +182,18 @@ object IntBooleanSerializer : KSerializer<Boolean> {
         }
     }
 
+    private fun deserializeWithNSObjectDecoder(decoder: NSObjDecoder): Boolean {
+        val nsObj = decoder.currentElement()
+        if (nsObj is NSNumber) {
+            return if (nsObj.isBoolean) {
+                nsObj.boolValue()
+            } else {
+                nsObj.intValue() == 1
+            }
+        }
+        return false
+    }
+
     override fun serialize(encoder: Encoder, value: Boolean) {
         encoder.encodeBoolean(value)
     }
@@ -190,8 +208,9 @@ private fun dynamicMap(element: JsonElement): JsonElement {
     return element
 }
 
-inline fun <reified T> parsePLIST(input: InputStream): T {
-    return PropertyListParser.parse(input).toJavaObject(T::class.java)
+inline fun <reified T : Any> parsePLIST(input: InputStream): T {
+    val obj = PropertyListParser.parse(input)
+    return decodeFromNSObject(obj)
 }
 
 val json = Json {
