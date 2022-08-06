@@ -35,8 +35,7 @@ fun checkWhileConditions(
         }
         node = node.pop()
     }
-    var whileRule: Pair<StateStack, BeginWhileRule>? = whileRules.getOrNull(whileRules.lastIndex)
-    whileRules.removeLastOrNull()
+    var whileRule: Pair<StateStack, BeginWhileRule>? = whileRules.removeLastOrNull()
     while (whileRule != null) {
         val (ruleScanner, findOptions) = RuleMatching.prepareRuleWhileSearch(
             whileRule.second,

@@ -149,7 +149,7 @@ object RuleMatching {
         stack: StateStack,
         anchorPosition: Int
     ): MatchInjectionsResult? {
-        // The lower the better
+        // The lower, the better
         var bestMatchRating = Int.MAX_VALUE
         var bestMatchCaptureIndices: Array<IntRange>? = null
         var bestMatchRuleId: RuleId = RuleId.from(0)
@@ -217,11 +217,11 @@ object RuleMatching {
         allowG: Boolean
     ): PrepareRuleResult {
         if (UseOnigurumaFindOptions) {
-            val ruleScanner = rule.compile(grammar, endRegexSource ?: "")
+            val ruleScanner = rule.compileWhile(grammar, endRegexSource ?: "")
             val findOptions = getFindOptions(allowA, allowG)
             return PrepareRuleResult(ruleScanner, findOptions)
         }
-        val ruleScanner = rule.compileAG(grammar, endRegexSource ?: "", allowA, allowG)
+        val ruleScanner = rule.compileWhileAG(grammar, endRegexSource ?: "", allowA, allowG)
         return PrepareRuleResult(ruleScanner, FindOptionConsts.None)
     }
 
