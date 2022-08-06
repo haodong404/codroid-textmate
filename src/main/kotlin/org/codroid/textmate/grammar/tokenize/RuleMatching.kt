@@ -5,8 +5,8 @@ import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.Injection
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.oniguruma.FindOption
-import org.codroid.textmate.oniguruma.FindOptionConsts
+import org.codroid.textmate.regex.FindOption
+import org.codroid.textmate.regex.FindOptionConsts
 import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.*
 import kotlin.experimental.or

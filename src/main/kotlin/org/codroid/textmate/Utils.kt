@@ -1,7 +1,5 @@
 package org.codroid.textmate
 
-import com.dd.plist.NSArray
-import com.dd.plist.NSDictionary
 import com.dd.plist.NSNumber
 import com.dd.plist.PropertyListParser
 import kotlinx.serialization.ExperimentalSerializationApi

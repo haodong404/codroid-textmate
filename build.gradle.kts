@@ -14,11 +14,11 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jruby.joni:joni:2.1.43")
     implementation("com.googlecode.plist:dd-plist:1.24")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    testImplementation(project(":oniguruma-lib"))
     implementation(kotlin("reflect"))
 }
 
@@ -28,8 +28,4 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
-}
-
-application {
-    mainClass.set("MainKt")
 }

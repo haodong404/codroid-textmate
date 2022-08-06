@@ -4,8 +4,8 @@ import org.codroid.textmate.grammar.BalancedBracketSelectors
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.ScopeDependencyProcessor
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.regex.RegexLib
+import org.codroid.textmate.regex.StandardRegex
 import org.codroid.textmate.theme.RawTheme
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.Theme
@@ -19,7 +19,7 @@ import org.codroid.textmate.theme.Theme
 typealias EmbeddedLanguagesMap = HashMap<ScopeName, Int>
 
 open class RegistryOptions(
-    open val regexLib: RegexLib,
+    open val regexLib: RegexLib = StandardRegex(),
     val theme: RawTheme? = null,
     val colorMap: Array<String>? = null,
     val loadGrammar: (suspend (scopeName: ScopeName) -> RawGrammar?)? = null,

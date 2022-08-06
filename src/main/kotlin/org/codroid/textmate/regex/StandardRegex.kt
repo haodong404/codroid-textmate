@@ -1,6 +1,5 @@
 package org.codroid.textmate.regex
 
-import org.codroid.textmate.DebugFlag
 import java.util.regex.PatternSyntaxException
 
 class StandardRegex : RegexLib {

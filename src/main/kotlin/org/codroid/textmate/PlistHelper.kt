@@ -1,10 +1,6 @@
 package org.codroid.textmate
 
-import com.dd.plist.NSArray
-import com.dd.plist.NSDictionary
-import com.dd.plist.NSNumber
-import com.dd.plist.NSObject
-import com.dd.plist.NSString
+import com.dd.plist.*
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.*

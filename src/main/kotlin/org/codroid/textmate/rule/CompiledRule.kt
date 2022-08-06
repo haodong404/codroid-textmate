@@ -1,6 +1,6 @@
 package org.codroid.textmate.rule
 
-import org.codroid.textmate.oniguruma.FindOption
+import org.codroid.textmate.regex.FindOption
 import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.regex.RegexString
 

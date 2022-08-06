@@ -1,6 +1,6 @@
 import org.codroid.textmate.*
 import org.codroid.textmate.exceptions.TextMateException
-import org.codroid.textmate.oniguruma.getDefaultRegexLib
+import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.theme.*
 import java.io.File
 import kotlin.experimental.or
@@ -82,7 +82,7 @@ class ThemesTest {
 
         val languages =
             parseJson<Array<LanguageRegistration>>(themeFile("languages.json")!!.inputStream())
-        val resolver = Resolver(getDefaultRegexLib(), grammars, languages)
+        val resolver = Resolver(OnigLib(), grammars, languages)
         val themeData = themeInfos.map { it.create(resolver) }
         // Discover all tests
         var testFiles = themeFile("tests/")?.listFiles()
@@ -108,7 +108,8 @@ class ThemesTest {
                 settings = arrayOf(
                     RawThemeSetting(settings = Setting(foreground = "#100000", background = "#200000")),
                     RawThemeSetting(
-                        scopesStr = "punctuation.definition.string.begin.html", settings = Setting(foreground = "#300000")
+                        scopesStr = "punctuation.definition.string.begin.html",
+                        settings = Setting(foreground = "#300000")
                     ),
                     RawThemeSetting(
                         scopesStr = "meta.tag punctuation.definition.string", settings = Setting(foreground = "#400000")
