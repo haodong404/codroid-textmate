@@ -5,8 +5,8 @@ plugins {
     kotlin("jvm") version "1.7.10"
 }
 
-group = "org.codroid.textmate"
-version = "1.0-SNAPSHOT"
+group = "org.codroid"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
