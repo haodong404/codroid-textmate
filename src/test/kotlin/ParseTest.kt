@@ -3,7 +3,9 @@ import com.dd.plist.PropertyListParser
 import kotlinx.serialization.*
 import org.codroid.textmate.*
 import org.codroid.textmate.grammar.RawGrammar
+import org.codroid.textmate.rule.RuleId
 import org.codroid.textmate.theme.RawTheme
+import org.codroid.textmate.theme.ScopeName
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -29,9 +31,9 @@ data class Position(val x: Int, val y: Int = -1)
 
 @Serializable
 data class NullableEntity(
+    val position: Position? = null,
     val arr: Array<Tag>? = null,
     val content: String? = null,
-    val position: Position? = null,
     val int: Int? = null,
     val float: Float? = null,
     val double: Double? = null,
@@ -176,8 +178,21 @@ class ParseTest {
             assertEquals("#block", result.patterns[0].include)
             assertEquals(2, result.repository.size)
             assertEquals(10, result.repository["block"]!!.repository!!.size)
+        };
+
+        {}.javaClass.getResourceAsStream("suite1/fixtures/66.plist")?.let {
+            val grammar = parsePLIST<RawGrammar>(it)
+            assertEquals("text.test", grammar.scopeName)
+            assertEquals(2, grammar.patterns.size)
+            assertEquals("comment", grammar.patterns[0].name)
         }
     }
+
+    @Serializable
+    data class RawGrammarTest(val scopeName: ScopeName, val rule: Array<RawRuleTest> = arrayOf())
+
+    @Serializable
+    data class RawRuleTest(val ruleID: RuleId? = null, val rule: String? = null, val boolean: Boolean)
 
     @Test
     fun `Parse Json to RawTheme`() {

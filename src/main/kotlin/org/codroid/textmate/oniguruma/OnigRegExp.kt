@@ -14,19 +14,29 @@ class OnigRegExp(source: String) {
     private var lastSearchPosition = -1
     private var lastSearchResult: OnigResult? = null
 
-    private val regex: RegexOnig
+    private val regex: RegexOnig?
 
     init {
-        val pattern = source.toByteArray(StandardCharsets.UTF_8)
-        regex = RegexOnig(
-            pattern,
-            0,
-            pattern.size,
-            Option.CAPTURE_GROUP,
-            UTF8Encoding.INSTANCE,
-            Syntax.DEFAULT,
-            WarnCallback.DEFAULT
-        )
+        val pattern = source.removePrefix("\\G").toByteArray(StandardCharsets.UTF_8)
+        regex = try {
+            RegexOnig(
+                pattern,
+                0,
+                pattern.size,
+                Option.CAPTURE_GROUP,
+                UTF8Encoding.INSTANCE,
+                Syntax.DEFAULT,
+                WarnCallback.DEFAULT
+            )
+        } catch (_: Exception) {
+            RegexOnig(
+                ByteArray(0), 0, 0,
+                Option.CAPTURE_GROUP,
+                UTF8Encoding.INSTANCE,
+                Syntax.DEFAULT,
+                WarnCallback.DEFAULT
+            )
+        }
     }
 
     fun search(str: OnigString, position: Int): OnigResult? {
@@ -43,7 +53,7 @@ class OnigRegExp(source: String) {
     }
 
     private fun search(data: ByteArray, position: Int, end: Int): OnigResult? {
-        val matcher = regex.matcher(data)
+        val matcher = regex?.matcher(data) ?: return null
         val status = matcher.search(position, end, 0)
         if (status != Matcher.FAILED) {
             val region = matcher.eagerRegion
