@@ -4,7 +4,7 @@
 
 **<u>Kotlin</u>** port of [vscode-textmate](https://github.com/microsoft/vscode-textmate/tree/caab3de34a8cc7182141c9e31e0f42b96a3a1bac). It helps tokenize text using [TextMate grammars.](https://macromates.com/manual/en/language_grammars)
 
-[Regex](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/) in kotlin-stdlib is used for parsing regexps by default. However, it may not be accurate because of the uniformity issue. So you can implement the `RegexLib` interface with [Oniguruma](https://github.com/kkos/oniguruma), or [oniguruma-lib](https://github.com/zacharychin233/codroid-textmate/tree/master/oniguruma-lib) in this project.
+[Regex](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/) in kotlin-stdlib is used for parsing regexps by default. However, it may not be accurate because of the uniformity issue. So you can implement the `RegexLib` interface with [Oniguruma](https://github.com/kkos/oniguruma), or use [oniguruma-lib](https://github.com/zacharychin233/codroid-textmate/tree/master/oniguruma-lib) directly.
 
 ## Usage
 

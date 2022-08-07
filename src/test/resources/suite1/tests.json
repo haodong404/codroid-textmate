@@ -1828,5 +1828,48 @@
 				]
 			}
 		]
+	},
+	{
+		"grammars": [
+			"fixtures/Kotlin.tmLanguage"
+		],
+		"grammarPath": "fixtures/Kotlin.tmLanguage",
+		"desc": "Out of length protection",
+		"lines": [
+			{
+				"line": "package org.codroid.textmate.theme",
+				"tokens": [
+					{
+						"value": "package",
+						"scopes": [
+							"source.kotlin",
+							"keyword.other.kotlin"
+						]
+					},
+					{
+						"value": " ",
+						"scopes": [
+							"source.kotlin"
+						]
+					},
+					{
+						"value": "org.codroid.textmate.theme",
+						"scopes": [
+							"source.kotlin",
+							"entity.name.package.kotlin"
+						]
+					}
+				]
+			},
+			{
+				"line": "",
+				"tokens": [
+					{
+						"value": "",
+						"scopes": ["source.kotlin"]
+					}
+				]
+			}
+		]
 	}
 ]

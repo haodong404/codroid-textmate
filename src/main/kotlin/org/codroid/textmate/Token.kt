@@ -5,7 +5,7 @@ package org.codroid.textmate
 import org.codroid.textmate.grammar.StateStack
 
 data class Token(
-    var startIndex: Int, val endIndex: Int, val scopes: Array<String>
+    var startIndex: Int, var endIndex: Int, val scopes: Array<String>
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

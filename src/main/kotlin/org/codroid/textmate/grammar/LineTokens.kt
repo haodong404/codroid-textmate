@@ -98,8 +98,12 @@ class LineTokens(
 
         if (this.tokens.isEmpty()) {
             this.lastTokenEndIndex = -1
-            this.produce(stack, lineLength)
+            this.produce(stack, lineLength - 1)
             this.tokens.last().startIndex = 0
+        } else {
+            if (this.tokens.last().endIndex == lineLength) {
+                this.tokens.last().endIndex = lineLength - 1
+            }
         }
         return this.tokens.toTypedArray()
     }
@@ -108,7 +112,6 @@ class LineTokens(
     fun getBinaryResult(stack: StateStack, lineLength: Int): UIntArray {
         if (this.binaryTokens.isNotEmpty() && this.binaryTokens[this.binaryTokens.size - 2] == (lineLength - 1).toUInt()) {
             // pop produced token for newline
-            this.binaryTokens.removeLast()
             this.binaryTokens.removeLast()
         }
         if (this.binaryTokens.isEmpty()) {
