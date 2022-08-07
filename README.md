@@ -1,6 +1,6 @@
 # codroid-textmate
 
-[![check](https://github.com/zacharychin233/codroid-textmate/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/zacharychin233/codroid-textmate/actions/workflows/ci.yml) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.codroid/codroid-textmate/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.codroid/codroid-textmate) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![check](https://github.com/zacharychin233/codroid-textmate/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/zacharychin233/codroid-textmate/actions/workflows/ci.yml) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.codroid/codroid-textmate/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.codroid/codroid-textmate) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)[![Docs](https://img.shields.io/badge/docs-latest-informational)](https://zacharychin233.github.io/codroid-textmate/)
 
 **<u>Kotlin</u>** port of [vscode-textmate](https://github.com/microsoft/vscode-textmate/tree/caab3de34a8cc7182141c9e31e0f42b96a3a1bac). It helps tokenize text using [TextMate grammars.](https://macromates.com/manual/en/language_grammars)
 
@@ -13,8 +13,8 @@
 For `build.gradle.kts`:
 
 ```kotlin
-dependencies {
-	implementation("org.codroid:codroid-textmate:1.0.0")
+dependencies { 
+    implementation("org.codroid:codroid-textmate:1.0.0")
     
     // Optional but recommended.
     implementation("org.codroid:oniguruma-lib:1.0.0")
