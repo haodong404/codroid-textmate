@@ -1,4 +1,4 @@
-package org.codroid.textmate.oniguruma
+package oniguruma
 
 import org.joni.Region
 

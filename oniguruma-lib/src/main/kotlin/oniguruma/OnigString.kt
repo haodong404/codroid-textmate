@@ -1,4 +1,4 @@
-package org.codroid.textmate.oniguruma
+package oniguruma
 
 import org.codroid.textmate.regex.RegexString
 import org.jcodings.specific.UTF8Encoding

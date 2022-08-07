@@ -5,12 +5,7 @@ import org.codroid.textmate.EncodedTokenAttributes.set
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.RawRepository
 import org.codroid.textmate.grammar.RawRule
-import org.codroid.textmate.oniguruma.OnigLib
-import org.codroid.textmate.oniguruma.OnigScanner
-import org.codroid.textmate.oniguruma.OnigString
-import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.regex.StandardRegex
-import org.codroid.textmate.regex.StandardResult
 import org.codroid.textmate.theme.FontStyle
 import org.codroid.textmate.theme.FontStyleConsts
 import kotlin.experimental.or

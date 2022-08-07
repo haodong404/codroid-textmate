@@ -3,10 +3,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     application
     kotlin("jvm") version "1.7.10"
+    id("org.jetbrains.dokka") version "1.7.10"
+    id("com.vanniktech.maven.publish.base") version "0.21.0"
 }
-
-group = "org.codroid"
-version = "1.0.0"
 
 repositories {
     mavenCentral()

@@ -1,6 +1,9 @@
-package org.codroid.textmate.oniguruma
+package oniguruma
 
-import org.codroid.textmate.regex.*
+import org.codroid.textmate.regex.RegexLib
+import org.codroid.textmate.regex.RegexMatch
+import org.codroid.textmate.regex.RegexScanner
+import org.codroid.textmate.regex.RegexString
 
 class OnigMatch(result: OnigResult, source: OnigString) : RegexMatch {
     override val index: Int = result.indexInScanner

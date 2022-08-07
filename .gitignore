@@ -3,8 +3,6 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-*.gpg
-
 ### IntelliJ IDEA ###
 .idea/
 *.iws

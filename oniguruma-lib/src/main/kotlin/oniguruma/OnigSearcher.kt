@@ -1,4 +1,4 @@
-package org.codroid.textmate.oniguruma
+package oniguruma
 
 class OnigSearcher(regExps: Array<String>) {
     private val regExps = regExps.map { OnigRegExp(it) }

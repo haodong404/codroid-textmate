@@ -5,7 +5,7 @@ import org.codroid.textmate.*
 import org.codroid.textmate.exceptions.TextMateException
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.oniguruma.OnigLib
+import oniguruma.OnigLib
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import kotlin.math.min

@@ -2,7 +2,6 @@ import kotlinx.serialization.Serializable
 import org.codroid.textmate.RegistryOptions
 import org.codroid.textmate.exceptions.TextMateException
 import org.codroid.textmate.grammar.RawGrammar
-import org.codroid.textmate.oniguruma.OnigLib
 import org.codroid.textmate.parseRawGrammar
 import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.theme.ScopeName
