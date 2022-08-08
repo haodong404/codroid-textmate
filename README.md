@@ -43,7 +43,7 @@ suspend fun main(args: Array<String>): Unit = withContext(Dispatchers.IO) {
         // Load the Kotlin grammar
         registry.loadGrammar("source.kotlin").run {
             val lines = arrayOf(
-                "fun sayHello(name) {",
+                "fun sayHello(name: String) {",
                 "\t println(\"Hello \$name !\")",
                 "}"
             )
@@ -71,18 +71,22 @@ suspend fun main(args: Array<String>): Unit = withContext(Dispatchers.IO) {
 If everything goes well, your output is as follows.
 
 ```text
-Tokenizing line: fun sayHello(name) {
+Tokenizing line: fun sayHello(name: String) {
  - Token from 0 to 3 ( fun ) with scopes source.kotlin, meta.function.kotlin, keyword.other.kotlin
  - Token from 3 to 4 (   ) with scopes source.kotlin, meta.function.kotlin
  - Token from 4 to 12 ( sayHello ) with scopes source.kotlin, meta.function.kotlin, entity.name.function.kotlin
  - Token from 12 to 13 ( ( ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin, punctuation.section.group.begin.kotlin, punctuation.definition.parameters.begin.kotlin
- - Token from 13 to 17 ( name ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin
- - Token from 17 to 18 ( ) ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin, punctuation.section.group.end.kotlin, punctuation.definition.parameters.end.kotlin
- - Token from 18 to 19 (   ) with scopes source.kotlin, meta.function.kotlin
- - Token from 19 to 20 ( { ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, punctuation.section.group.begin.kotlin
+ - Token from 13 to 17 ( name ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin, variable.parameter.function.kotlin
+ - Token from 17 to 18 ( : ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin, keyword.operator.declaration.kotlin
+ - Token from 18 to 19 (   ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin
+ - Token from 19 to 25 ( String ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin, support.class.kotlin
+ - Token from 25 to 26 ( ) ) with scopes source.kotlin, meta.function.kotlin, meta.parameters.kotlin, punctuation.section.group.end.kotlin, punctuation.definition.parameters.end.kotlin
+ - Token from 26 to 27 (   ) with scopes source.kotlin, meta.function.kotlin
+ - Token from 27 to 28 ( { ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, punctuation.section.group.begin.kotlin
 
 Tokenizing line: 	 println("Hello $name !")
- - Token from 0 to 9 ( 	 println ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin
+ - Token from 0 to 2 ( 	  ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin
+ - Token from 2 to 9 ( println ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, support.function.kotlin
  - Token from 9 to 10 ( ( ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, meta.group.kotlin, punctuation.section.group.begin.kotlin
  - Token from 10 to 11 ( " ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, meta.group.kotlin, string.quoted.double.kotlin, punctuation.definition.string.begin.kotlin
  - Token from 11 to 17 ( Hello  ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, meta.group.kotlin, string.quoted.double.kotlin
@@ -93,7 +97,6 @@ Tokenizing line: 	 println("Hello $name !")
 
 Tokenizing line: }
  - Token from 0 to 1 ( } ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, punctuation.section.group.end.kotlin
-
 ```
 
 ## License
