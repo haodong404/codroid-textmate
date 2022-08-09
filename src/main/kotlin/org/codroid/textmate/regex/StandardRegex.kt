@@ -1,5 +1,6 @@
 package org.codroid.textmate.regex
 
+import org.codroid.textmate.DebugFlag
 import java.util.regex.PatternSyntaxException
 
 class StandardRegex : RegexLib {
@@ -7,13 +8,10 @@ class StandardRegex : RegexLib {
         return StandardRegexScanner(source)
     }
 
-    override fun createString(str: String): StandardRegexString {
-        return StandardRegexString(str)
+    override fun compile(pattern: String): RegexExp {
+        return StandardRegexExp(pattern)
     }
 }
-
-@JvmInline
-value class StandardRegexString(override val content: String) : RegexString
 
 class StandardRegexScanner(
     patterns: Array<String>
@@ -21,7 +19,7 @@ class StandardRegexScanner(
 
     private val searcher = StandardSearcher(patterns)
 
-    override fun findNextMatchSync(string: RegexString, startPosition: Int): RegexMatch? {
+    override fun findNextMatchSync(string: String, startPosition: Int): RegexMatch? {
         return StandardRegexMatch(searcher.search(string, startPosition) ?: return null, string)
     }
 
@@ -31,15 +29,15 @@ class StandardRegexScanner(
 }
 
 class StandardRegexMatch(
-    result: StandardResult,
-    source: RegexString
+    result: MatchResult,
+    source: String
 ) : RegexMatch {
     override val index: Int = result.indexInScanner
     override val ranges: Array<IntRange> = captureRanges(result)
 
-    private fun captureRanges(result: StandardResult): Array<IntRange> {
-        return result.matchResult.groups.map {
-            it?.range ?: IntRange(0, -1)
+    private fun captureRanges(result: MatchResult): Array<IntRange> {
+        return result.groups.map {
+            it.range
         }.toTypedArray()
     }
 }
@@ -51,15 +49,15 @@ data class StandardResult(val matchResult: MatchResult, var indexInScanner: Int)
 
 class StandardSearcher(patterns: Array<String>) {
 
-    private val regexes = patterns.map { RegexExp(it) }
+    private val regexes = patterns.map { StandardRegexExp(it) }
 
-    fun search(source: RegexString, offset: Int): StandardResult? {
+    fun search(source: String, offset: Int): MatchResult? {
         var bestLocation = 0
-        var bestResult: StandardResult? = null
+        var bestResult: MatchResult? = null
         for ((idx, regex) in regexes.withIndex()) {
-            val result = regex.search(source, offset)
+            val result = regex.search2(source, offset)
             if (result != null && result.count > 0) {
-                val location = result.matchResult.range.first
+                val location = result.range.first
                 if (bestResult == null || location < bestLocation) {
                     bestLocation = location
                     bestResult = result
@@ -74,37 +72,59 @@ class StandardSearcher(patterns: Array<String>) {
     }
 }
 
-class RegexExp(pattern: String) {
+class StandardRegexExp(pattern: String) : RegexExp(pattern) {
 
-    private var lastSearchString: RegexString? = null
+    private var lastSearchString: String? = null
     private var lastSearchPosition = -1
-    private var lastSearchResult: StandardResult? = null
+    private var lastSearchResult: MatchResult? = null
 
     private val regex = try {
         Regex(pattern)
     } catch (e: PatternSyntaxException) {
-        if (true) {
+        if (DebugFlag) {
             System.err.println("An illegal regular expression was found: ${e.pattern}")
         }
         null
     }
 
-    fun search(str: RegexString, position: Int): StandardResult? {
+    override fun containsMatchIn(input: String): Boolean {
+        return regex?.containsMatchIn(input) ?: false
+    }
+
+    fun search2(input: String, startPosition: Int): MatchResult? {
         val theLastSearchResult = lastSearchResult
-        if (lastSearchString == str && lastSearchPosition <= position &&
-            (theLastSearchResult == null || theLastSearchResult.matchResult.range.first >= position)
+        if (lastSearchString == input && lastSearchPosition <= startPosition &&
+            (theLastSearchResult == null || theLastSearchResult.range.first >= startPosition)
         ) {
             return theLastSearchResult
         }
-        lastSearchString = str
-        lastSearchPosition = position
-        val found = regex?.find(str.content, position)
-        lastSearchResult = if (found != null) {
-            StandardResult(found, -1)
-        } else {
-            null
-        }
+        lastSearchString = input
+        lastSearchPosition = startPosition
+        val found = regex?.find(input, startPosition)
+        lastSearchResult = search(input, startPosition)
         return lastSearchResult
+    }
+
+    override fun search(input: String, startPosition: Int): MatchResult? {
+        regex?.find(input, startPosition)?.let {
+            val groups = it.groups.map { group ->
+                MatchGroup(group?.value ?: "", group?.range ?: 0..0)
+            }
+            return MatchResult(it.value, it.range, groups.toTypedArray())
+        }
+        return null
+    }
+
+    override fun replace(origin: String, transform: (result: MatchResult) -> String): String {
+        regex?.run {
+            return regex.replace(origin) r@{
+                val result = it.groups.map { group ->
+                    MatchGroup(group?.value ?: "", group?.range ?: 0..0)
+                }
+                return@r transform(MatchResult(it.value, it.range, result.toTypedArray()))
+            }
+        }
+        return origin
     }
 
 }
