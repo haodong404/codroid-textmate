@@ -3,6 +3,8 @@ package org.codroid.textmate.regex
 interface RegexLib {
     fun createScanner(source: Array<String>): RegexScanner
     fun createString(str: String): RegexString
+
+    fun compile(pattern: String): RegexExp
 }
 
 interface RegexString {
@@ -19,6 +21,48 @@ interface RegexMatch {
     val ranges: Array<IntRange>
 }
 
+data class MatchResult(
+    val value: String,
+    val range: IntRange,
+    val groups: Array<MatchGroup>,
+
+    // Used in scanner.
+    var indexInScanner: Int = -1
+) {
+    val count: Int
+        get() = groups.size
+}
+
+data class MatchGroup(val value: String, val range: IntRange)
+
+/**
+ * Due to the difference in regular expression between Android and Java.
+ * Something unexpected happened.
+ * So I used this wrapper class for regex in this project.
+ */
+abstract class RegexExp(pattern: String) {
+
+    /**
+     * Indicates whether the regular expression can find at least one match in the specified input.
+     */
+    abstract fun containsMatchIn(input: RegexString): Boolean
+
+    /**
+     * Returns a sequence of all occurrences of a regular expression within the input string,
+     * beginning at the specified start index.
+     */
+    abstract fun search(input: RegexString, startPosition: Int): MatchResult?
+
+    /**
+     * Search from start.
+     */
+    fun search(input: RegexString): MatchResult? = search(input, 0)
+
+    /**
+     * Replaces all occurrences of this regular expression in the specified origin string with the result of the given function transform that takes MatchResult and returns a string to be used as a replacement for that match.
+     */
+    abstract fun replace(origin: RegexString, transform: (result: MatchResult) -> String): String
+}
 
 typealias FindOption = Byte
 

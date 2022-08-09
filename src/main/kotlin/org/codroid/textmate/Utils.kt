@@ -31,7 +31,7 @@ inline fun <reified T : Cloneable> MutableList<T>.clone(): MutableList<T> {
     return cloned
 }
 
-private var CAPTURING_REGEX_SOURCE = Regex("""\$(\d+)|\$\{(\d+):/(downcase|upcase)}""")
+private var CAPTURING_REGEX_SOURCE = Regex("\\$(\\d+)|\\$\\{(\\d+):/(downcase|upcase)}")
 
 object RegexSource {
     fun hasCaptures(regexSource: String?): Boolean {

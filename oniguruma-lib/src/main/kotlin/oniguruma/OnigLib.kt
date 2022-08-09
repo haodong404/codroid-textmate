@@ -1,9 +1,6 @@
 package oniguruma
 
-import org.codroid.textmate.regex.RegexLib
-import org.codroid.textmate.regex.RegexMatch
-import org.codroid.textmate.regex.RegexScanner
-import org.codroid.textmate.regex.RegexString
+import org.codroid.textmate.regex.*
 
 class OnigMatch(result: OnigResult, source: OnigString) : RegexMatch {
     override val index: Int = result.indexInScanner
@@ -30,6 +27,10 @@ class OnigLib : RegexLib {
 
     override fun createString(str: String): RegexString {
         return OnigString.create(str)
+    }
+
+    override fun compile(pattern: String): RegexExp {
+        return OnigRegExp(pattern)
     }
 
 }

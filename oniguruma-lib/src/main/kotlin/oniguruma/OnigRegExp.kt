@@ -1,15 +1,20 @@
 package oniguruma
 
+import org.codroid.textmate.regex.MatchGroup
+import org.codroid.textmate.regex.MatchResult
+import org.codroid.textmate.regex.RegexExp
+import org.codroid.textmate.regex.RegexString
 import org.jcodings.specific.UTF8Encoding
 import org.joni.Matcher
 import org.joni.Option
 import org.joni.Syntax
 import org.joni.WarnCallback
 import java.nio.charset.StandardCharsets
+import kotlin.math.max
 
 typealias RegexOnig = org.joni.Regex
 
-class OnigRegExp(source: String) {
+class OnigRegExp(source: String) : RegexExp(source) {
     private var lastSearchString: OnigString? = null
     private var lastSearchPosition = -1
     private var lastSearchResult: OnigResult? = null
@@ -30,29 +35,29 @@ class OnigRegExp(source: String) {
             )
         } catch (_: Exception) {
             RegexOnig(
-                ByteArray(0), 0, 0,
-                Option.CAPTURE_GROUP,
-                UTF8Encoding.INSTANCE,
-                Syntax.DEFAULT,
-                WarnCallback.DEFAULT
+                ByteArray(0), 0, 0, Option.CAPTURE_GROUP, UTF8Encoding.INSTANCE, Syntax.DEFAULT, WarnCallback.DEFAULT
             )
         }
     }
 
-    fun search(str: OnigString, position: Int): OnigResult? {
+    /**
+     * Use it when you need save the last result.
+     */
+    fun search2(str: OnigString, position: Int): OnigResult? {
         val theLastSearchResult = lastSearchResult
-        if (lastSearchString == str && lastSearchPosition <= position &&
-            (theLastSearchResult == null || theLastSearchResult.locationAt(0) >= position)
+        if (lastSearchString == str && lastSearchPosition <= position && (theLastSearchResult == null || theLastSearchResult.locationAt(
+                0
+            ) >= position)
         ) {
             return theLastSearchResult
         }
         lastSearchString = str
         lastSearchPosition = position
-        lastSearchResult = search(str.bytesUTF8, position, str.bytesCount)
+        lastSearchResult = searchForRegion(str.bytesUTF8, position, str.bytesCount)
         return lastSearchResult
     }
 
-    private fun search(data: ByteArray, position: Int, end: Int): OnigResult? {
+    private fun searchForRegion(data: ByteArray, position: Int, end: Int): OnigResult? {
         val matcher = regex?.matcher(data) ?: return null
         val status = matcher.search(position, end, 0)
         if (status != Matcher.FAILED) {
@@ -60,5 +65,50 @@ class OnigRegExp(source: String) {
             return OnigResult(region, -1)
         }
         return null
+    }
+
+    override fun search(input: RegexString, startPosition: Int): MatchResult? {
+        val onigStr = input as OnigString
+        searchForRegion(onigStr.bytesUTF8, 0, onigStr.bytesCount)?.region?.let { region ->
+            val groups = mutableListOf<MatchGroup>()
+            repeat(region.numRegs) {
+                ByteArray(region.end[it] - region.beg[it]) { i ->
+                    onigStr.bytesUTF8[region.beg[it] + i]
+                }.let { value ->
+                    groups.add(
+                        MatchGroup(
+                            String(value, Charsets.UTF_8), IntRange(
+                                onigStr.getCharIndexOfByte(max(0, region.beg[it])),
+                                onigStr.getCharIndexOfByte(max(0, region.end[it])) - 1
+                            )
+                        )
+                    )
+                }
+            }
+            val resultRange =
+                IntRange(
+                    onigStr.getCharIndexOfByte(max(0, region.beg[0])),
+                    onigStr.getCharIndexOfByte(max(0, region.end[0])) - 1
+                )
+            return MatchResult(
+                onigStr.content.substring(resultRange),
+                resultRange,
+                groups.toTypedArray()
+            )
+        }
+
+        return null
+    }
+
+    override fun containsMatchIn(input: RegexString): Boolean {
+        return regex?.matcher((input as OnigString).bytesUTF8)?.search(0, input.bytesCount, 0) != Matcher.FAILED
+    }
+
+
+    override fun replace(origin: RegexString, transform: (result: MatchResult) -> String): String {
+        search(origin)?.run {
+            return origin.content.replaceRange(range, transform(this))
+        }
+        return origin.content
     }
 }
