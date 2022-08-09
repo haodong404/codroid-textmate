@@ -5,7 +5,6 @@ import org.codroid.textmate.grammar.tokenize.tokenizeString
 import org.codroid.textmate.regex.RegexExp
 import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.regex.RegexScanner
-import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.*
 import org.codroid.textmate.theme.ScopeName
 import org.codroid.textmate.theme.ThemeProvider
@@ -204,7 +203,6 @@ class Grammar(
 
     override fun createScanner(source: Array<String>): RegexScanner = this.regexLib.createScanner(source)
 
-    override fun createString(str: String): RegexString = this.regexLib.createString(str)
     override fun compile(pattern: String): RegexExp = this.regexLib.compile(pattern)
 
     data class TokenizeResult(
@@ -253,14 +251,12 @@ class Grammar(
             newPreState = prevState
         }
         val newLineText = "$lineText\n"
-        val onigLineText = this.createString(newLineText)
-        val lineLength = onigLineText.content.length
         val lineTokens = LineTokens(
             emitBinaryTokens, newLineText, this.tokenTypeMatchers.toTypedArray(), this.balancedBracketSelectors
         )
-        val result = tokenizeString(this, onigLineText, isFirstLine, 0, newPreState, lineTokens, true, timeLimit)
+        val result = tokenizeString(this, newLineText, isFirstLine, 0, newPreState, lineTokens, true, timeLimit)
 
-        return TokenizeResult(lineLength, lineTokens, result.stack, result.stoppedEarly)
+        return TokenizeResult(newLineText.length, lineTokens, result.stack, result.stoppedEarly)
     }
 
 }

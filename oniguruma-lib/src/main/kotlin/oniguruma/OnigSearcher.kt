@@ -1,7 +1,5 @@
 package oniguruma
 
-import org.codroid.textmate.regex.MatchResult
-
 class OnigSearcher(regExps: Array<String>) {
     private val regExps = regExps.map { OnigRegExp(it) }
 

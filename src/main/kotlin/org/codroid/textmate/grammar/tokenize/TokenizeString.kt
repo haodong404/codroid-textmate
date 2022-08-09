@@ -5,7 +5,6 @@ import org.codroid.textmate.endExclusive
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.BeginEndRule
 import org.codroid.textmate.rule.BeginWhileRule
 import org.codroid.textmate.rule.MatchRule
@@ -25,7 +24,7 @@ import org.codroid.textmate.rule.RuleId
  */
 fun tokenizeString(
     grammar: Grammar,
-    lineText: RegexString,
+    lineText: String,
     isFirstLine_: Boolean,
     linePos_: Int,
     stack_: StateStack,
@@ -33,7 +32,7 @@ fun tokenizeString(
     checkWhileConditions: Boolean,
     timeLimit: Int
 ): TokenizeStringResult {
-    val lineLength = lineText.content.length
+    val lineLength = lineText.length
     var stop = false
     var anchorPosition = -1
 
@@ -53,7 +52,7 @@ fun tokenizeString(
             println("")
             println(
                 "@@scanNext $linePosClone: |${
-                    lineText.content.substring(linePosClone).replace(Regex("\n$"), "\\n")
+                    lineText.substring(linePosClone).replace(Regex("\n$"), "\\n")
                 }"
             )
         }
@@ -116,7 +115,7 @@ fun tokenizeString(
             lineTokens.produce(stackClone, captureIndices[0].first)
             val beforePush = stackClone
             // push it on the stack rule
-            val scopeName = rule?.getName(lineText.content, captureIndices)
+            val scopeName = rule?.getName(lineText, captureIndices)
             val nameScopesList = stackClone.contentNameScopesList.pushAttributed(scopeName, grammar)
             stackClone = stackClone.push(
                 matchedRuleId, linePosClone, anchorPosition, captureIndices[0].endExclusive() == lineLength,
@@ -138,11 +137,11 @@ fun tokenizeString(
                     )
                     lineTokens.produce(stackClone, captureIndices[0].endExclusive())
                     anchorPosition = captureIndices[0].endExclusive()
-                    val contentName = rule.getContentName(lineText.content, captureIndices)
+                    val contentName = rule.getContentName(lineText, captureIndices)
                     val contentNameScopesList = nameScopesList.pushAttributed(contentName, grammar)
                     stackClone = stackClone.withContentNameScopesList(contentNameScopesList)
                     if (rule.endHasBackReferences) {
-                        val temp = rule.getEndWithResolvedBackReferences(lineText.content, captureIndices)
+                        val temp = rule.getEndWithResolvedBackReferences(lineText, captureIndices)
                         stackClone = stackClone.withEndRule(
                             temp
                         )
@@ -160,6 +159,7 @@ fun tokenizeString(
                         return
                     }
                 }
+
                 is BeginWhileRule -> {
                     if (DebugFlag) {
                         println("  pushing ${rule.debugName()}")
@@ -170,14 +170,14 @@ fun tokenizeString(
                     )
                     lineTokens.produce(stackClone, captureIndices[0].endExclusive())
                     anchorPosition = captureIndices[0].endExclusive()
-                    val contentName = rule.getContentName(lineText.content, captureIndices)
+                    val contentName = rule.getContentName(lineText, captureIndices)
                     val contentNameScopesList = nameScopesList.pushAttributed(contentName, grammar)
                     stackClone = stackClone.withContentNameScopesList(contentNameScopesList)
 
                     if (rule.whileHasBackReferences) {
                         stackClone = stackClone.withEndRule(
                             rule.getWhileWithResolvedBackReferences(
-                                lineText.content, captureIndices
+                                lineText, captureIndices
                             )
                         )
                     }
@@ -195,6 +195,7 @@ fun tokenizeString(
                         return
                     }
                 }
+
                 else -> {
                     val matchingRule = rule as MatchRule
                     if (DebugFlag) {

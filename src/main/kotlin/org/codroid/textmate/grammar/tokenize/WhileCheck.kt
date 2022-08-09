@@ -5,7 +5,6 @@ import org.codroid.textmate.endExclusive
 import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
-import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.BeginWhileRule
 import org.codroid.textmate.rule.RuleId
 
@@ -16,7 +15,7 @@ import org.codroid.textmate.rule.RuleId
  */
 fun checkWhileConditions(
     grammar: Grammar,
-    lineText: RegexString,
+    lineText: String,
     isFirstLine_: Boolean,
     linePos_: Int,
     stack_: StateStack,

@@ -2,7 +2,6 @@ package org.codroid.textmate.rule
 
 import org.codroid.textmate.regex.FindOption
 import org.codroid.textmate.regex.RegexLib
-import org.codroid.textmate.regex.RegexString
 
 class CompiledRule(
     onigLib: RegexLib,
@@ -27,7 +26,7 @@ class CompiledRule(
     }
 
     fun findNextMatchSync(
-        string: RegexString,
+        string: String,
         startPosition: Int,
         option: FindOption
     ): FindNextMatchResult? {

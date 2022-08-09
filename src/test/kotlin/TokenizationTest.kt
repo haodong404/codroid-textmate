@@ -1,11 +1,11 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
+import oniguruma.OnigLib
 import org.codroid.textmate.*
 import org.codroid.textmate.exceptions.TextMateException
 import org.codroid.textmate.grammar.RawGrammar
 import org.codroid.textmate.grammar.StateStack
-import oniguruma.OnigLib
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import kotlin.math.min

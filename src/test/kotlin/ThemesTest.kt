@@ -1,6 +1,6 @@
+import oniguruma.OnigLib
 import org.codroid.textmate.*
 import org.codroid.textmate.exceptions.TextMateException
-import oniguruma.OnigLib
 import org.codroid.textmate.theme.*
 import java.io.File
 import kotlin.experimental.or

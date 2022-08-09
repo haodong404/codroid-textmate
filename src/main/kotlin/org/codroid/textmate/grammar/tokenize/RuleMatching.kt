@@ -7,7 +7,6 @@ import org.codroid.textmate.grammar.LineTokens
 import org.codroid.textmate.grammar.StateStack
 import org.codroid.textmate.regex.FindOption
 import org.codroid.textmate.regex.FindOptionConsts
-import org.codroid.textmate.regex.RegexString
 import org.codroid.textmate.rule.*
 import kotlin.experimental.or
 import kotlin.math.min
@@ -63,7 +62,7 @@ data class PrepareRuleResult(val ruleScanner: CompiledRule, val findOptions: Fin
 object RuleMatching {
     fun matchRuleOrInjections(
         grammar: Grammar,
-        lineText: RegexString,
+        lineText: String,
         isFirstLine: Boolean,
         linePos: Int,
         stack: StateStack,
@@ -102,7 +101,7 @@ object RuleMatching {
 
     private fun matchRule(
         grammar: Grammar,
-        lineText: RegexString,
+        lineText: String,
         isFirstLine: Boolean,
         linePos: Int,
         stack: StateStack,
@@ -143,7 +142,7 @@ object RuleMatching {
     private fun matchInjections(
         injections: Array<Injection>,
         grammar: Grammar,
-        lineText: RegexString,
+        lineText: String,
         isFirstLine: Boolean,
         linePos: Int,
         stack: StateStack,
@@ -238,7 +237,7 @@ object RuleMatching {
 
     fun handleCaptures(
         grammar: Grammar,
-        lineText: RegexString,
+        lineText: String,
         isFirstLine: Boolean,
         stack: StateStack,
         lineTokens: LineTokens,
@@ -246,8 +245,6 @@ object RuleMatching {
         captureIndices: Array<IntRange>
     ) {
         if (captures.isEmpty()) return
-
-        val lineTextContent = lineText.content
 
         val len = min(captures.size, captureIndices.size)
         val localStack = mutableListOf<LocalStackElement>()
@@ -281,23 +278,23 @@ object RuleMatching {
 
             if (captureRule.retokenizeCapturedWithRuleId != RuleId.from(0)) {
                 // the capture requires additional matching
-                val scopeName = captureRule.getName(lineTextContent, captureIndices)
+                val scopeName = captureRule.getName(lineText, captureIndices)
                 val nameScopesList = stack.contentNameScopesList.pushAttributed(scopeName, grammar)
-                val contentName = captureRule.getContentName(lineTextContent, captureIndices)
+                val contentName = captureRule.getContentName(lineText, captureIndices)
                 val contentNameScopesList = nameScopesList.pushAttributed(contentName, grammar)
 
                 val stackClone = stack.push(
                     captureRule.retokenizeCapturedWithRuleId, captureIndex.first,
                     -1, false, null, nameScopesList, contentNameScopesList
                 )
-                val onigSubStr = grammar.createString(lineTextContent.substring(0, captureIndex.endExclusive()))
+                val onigSubStr =lineText.substring(0, captureIndex.endExclusive())
                 tokenizeString(
                     grammar, onigSubStr, isFirstLine && captureIndex.first == 0, captureIndex.first,
                     stackClone, lineTokens, false, 0
                 )
                 continue
             }
-            val captureRuleScopeName = captureRule.getName(lineTextContent, captureIndices)
+            val captureRuleScopeName = captureRule.getName(lineText, captureIndices)
             if (captureRuleScopeName != null) {
                 // push
                 val base = if (localStack.isNotEmpty()) localStack.last().scopes else stack.contentNameScopesList
