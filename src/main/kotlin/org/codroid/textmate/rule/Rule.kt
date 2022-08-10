@@ -45,7 +45,7 @@ interface WithPatternRule {
     val hasMissingPatterns: Boolean
 }
 
-abstract class Rule() {
+abstract class Rule {
     abstract val id: RuleId
     abstract val name: String?
     abstract val contentName: String?

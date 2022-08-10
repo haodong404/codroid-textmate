@@ -3,7 +3,7 @@ package org.codroid.textmate.regex
 interface RegexLib {
     fun createScanner(source: Array<String>): RegexScanner
 
-    fun compile(pattern: String): RegexExp
+    fun compile(pattern: String): RegularExp
 }
 
 interface RegexScanner {
@@ -35,7 +35,7 @@ data class MatchGroup(val value: String, val range: IntRange)
  * Something unexpected happened.
  * So I used this wrapper class for regex in this project.
  */
-abstract class RegexExp(pattern: String) {
+abstract class RegularExp(pattern: String) {
 
     /**
      * Indicates whether the regular expression can find at least one match in the specified input.

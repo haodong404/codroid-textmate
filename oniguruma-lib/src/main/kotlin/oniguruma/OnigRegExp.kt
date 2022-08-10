@@ -1,8 +1,9 @@
 package oniguruma
 
+import org.codroid.textmate.endExclusive
 import org.codroid.textmate.regex.MatchGroup
 import org.codroid.textmate.regex.MatchResult
-import org.codroid.textmate.regex.RegexExp
+import org.codroid.textmate.regex.RegularExp
 import org.jcodings.specific.UTF8Encoding
 import org.joni.Matcher
 import org.joni.Option
@@ -13,7 +14,7 @@ import kotlin.math.max
 
 typealias RegexOnig = org.joni.Regex
 
-class OnigRegExp(source: String) : RegexExp(source) {
+class OnigRegExp(source: String) : RegularExp(source) {
 
     private var lastSearchString: OnigString? = null
     private var lastSearchPosition = -1
@@ -69,7 +70,7 @@ class OnigRegExp(source: String) : RegexExp(source) {
 
     override fun search(input: String, startPosition: Int): MatchResult? {
         OnigString.create(input).let { onigStr ->
-            searchForRegion(onigStr.bytesUTF8, 0, onigStr.bytesCount)?.region?.let { region ->
+            searchForRegion(onigStr.bytesUTF8, startPosition, onigStr.bytesCount)?.region?.let { region ->
                 val groups = mutableListOf<MatchGroup>()
                 repeat(region.numRegs) {
                     ByteArray(region.end[it] - region.beg[it]) { i ->
@@ -108,9 +109,16 @@ class OnigRegExp(source: String) : RegexExp(source) {
 
 
     override fun replace(origin: String, transform: (result: MatchResult) -> String): String {
-        search(origin)?.run {
-            return origin.replaceRange(range, transform(this))
+        var search = search(origin)
+        var replaced: String? = null
+        var result = origin
+        while (search != null) {
+            if (replaced == null) {
+                replaced = transform(search)
+            }
+            result = result.replaceRange(search.range, replaced)
+            search = search(result, search.range.endExclusive())
         }
-        return origin
+        return result
     }
 }

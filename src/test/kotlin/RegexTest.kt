@@ -1,4 +1,6 @@
 import oniguruma.OnigLib
+import org.codroid.textmate.RegexSource
+import org.codroid.textmate.globalRegexLib
 import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.regex.StandardRegex
 import kotlin.test.Test
@@ -29,6 +31,12 @@ class RegexTest {
             "[replaced]"
         }
         assertEquals("123[replaced]def", replaced)
+
+        val regex3 = regexLib.compile("\\$(\\d+)|\\$\\{(\\d+):/(downcase|upcase)}")
+        regex3.replace("keyword.declaration.\$0") {
+            print(it.value)
+            "Hello"
+        }
     }
 
     private fun testMultibyteChar(regexLib: RegexLib) {

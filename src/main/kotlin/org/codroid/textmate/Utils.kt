@@ -31,9 +31,12 @@ inline fun <reified T : Cloneable> MutableList<T>.clone(): MutableList<T> {
     return cloned
 }
 
-private var CAPTURING_REGEX_SOURCE = Regex("\\$(\\d+)|\\$\\{(\\d+):/(downcase|upcase)}")
-
 object RegexSource {
+
+    private val CAPTURING_REGEX_SOURCE by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        globalRegexLib.compile("\\$(\\d+)|\\$\\{(\\d+):/(downcase|upcase)}")
+    }
+
     fun hasCaptures(regexSource: String?): Boolean {
         if (regexSource == null) return false
         return CAPTURING_REGEX_SOURCE.containsMatchIn(regexSource)
@@ -42,11 +45,12 @@ object RegexSource {
     fun replaceCaptures(
         regexSource: String, captureSource: String, captureIndices: Array<IntRange>
     ): String {
-        return regexSource.replace(CAPTURING_REGEX_SOURCE) {
+        return CAPTURING_REGEX_SOURCE.replace(regexSource) {
+            val temp = it.groups[1].value.ifEmpty {
+                it.groups[2].value
+            }
             val capture = captureIndices.getOrNull(
-                Integer.parseInt(
-                    it.groups[1]?.value ?: it.groups[2]?.value ?: "0", 10
-                )
+                Integer.parseInt(temp, 10)
             )
             return@replace if (capture != null) {
                 var result = captureSource.substring(capture)
@@ -54,7 +58,7 @@ object RegexSource {
                 while (result[0] == '.') {
                     result = result.substring(1)
                 }
-                when (it.groups[3]?.value) {
+                when (it.groups[3].value) {
                     "downcase" -> result.lowercase()
                     "upcase" -> result.uppercase()
                     else -> result
@@ -65,11 +69,6 @@ object RegexSource {
         }
     }
 }
-
-/**
- * A union of given const enum values.
- */
-typealias OrMask = Int
 
 fun strcmp(a: String, b: String): Int {
     return if (a < b) -1

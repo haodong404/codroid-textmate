@@ -1,5 +1,6 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import oniguruma.OnigLib
 import org.codroid.textmate.*
 import org.codroid.textmate.EncodedTokenAttributes.set
 import org.codroid.textmate.grammar.RawGrammar
@@ -386,7 +387,7 @@ class GrammarTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `Shadowed rules are resolved correctly`() = runTest {
-        val registry = Registry(RegistryOptions(regexLib = StandardRegex()))
+        val registry = createRegistry(regexLib = OnigLib())
 
         val grammar = registry.addGrammar(
             rawGrammar = RawGrammar(

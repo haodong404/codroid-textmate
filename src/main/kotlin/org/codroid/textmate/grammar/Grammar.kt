@@ -2,7 +2,7 @@ package org.codroid.textmate.grammar
 
 import org.codroid.textmate.*
 import org.codroid.textmate.grammar.tokenize.tokenizeString
-import org.codroid.textmate.regex.RegexExp
+import org.codroid.textmate.regex.RegularExp
 import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.regex.RegexScanner
 import org.codroid.textmate.rule.*
@@ -203,7 +203,7 @@ class Grammar(
 
     override fun createScanner(source: Array<String>): RegexScanner = this.regexLib.createScanner(source)
 
-    override fun compile(pattern: String): RegexExp = this.regexLib.compile(pattern)
+    override fun compile(pattern: String): RegularExp = this.regexLib.compile(pattern)
 
     data class TokenizeResult(
         val lineLength: Int,

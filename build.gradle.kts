@@ -9,15 +9,13 @@ plugins {
     application
 }
 
-version = "1.0.0"
-
 tasks.dokkaHtml.configure {
     outputDirectory.set(rootDir.resolve("docs"))
 }
 
 allprojects {
     group = "org.codroid"
-    version = "1.0.0"
+    version = "1.0.1"
     plugins.withId("com.vanniktech.maven.publish.base") {
         mavenPublishing {
             pomFromGradleProperties()

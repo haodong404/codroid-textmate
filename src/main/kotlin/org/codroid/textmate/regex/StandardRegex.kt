@@ -8,8 +8,8 @@ class StandardRegex : RegexLib {
         return StandardRegexScanner(source)
     }
 
-    override fun compile(pattern: String): RegexExp {
-        return StandardRegexExp(pattern)
+    override fun compile(pattern: String): RegularExp {
+        return StandardRegularExp(pattern)
     }
 }
 
@@ -49,7 +49,7 @@ data class StandardResult(val matchResult: MatchResult, var indexInScanner: Int)
 
 class StandardSearcher(patterns: Array<String>) {
 
-    private val regexes = patterns.map { StandardRegexExp(it) }
+    private val regexes = patterns.map { StandardRegularExp(it) }
 
     fun search(source: String, offset: Int): MatchResult? {
         var bestLocation = 0
@@ -72,7 +72,7 @@ class StandardSearcher(patterns: Array<String>) {
     }
 }
 
-class StandardRegexExp(pattern: String) : RegexExp(pattern) {
+class StandardRegularExp(pattern: String) : RegularExp(pattern) {
 
     private var lastSearchString: String? = null
     private var lastSearchPosition = -1

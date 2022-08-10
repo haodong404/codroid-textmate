@@ -18,6 +18,19 @@ import org.codroid.textmate.theme.Theme
 
 typealias EmbeddedLanguagesMap = HashMap<ScopeName, Int>
 
+/**
+ * Convenient to create registry.
+ */
+fun createRegistry(
+    regexLib: RegexLib = StandardRegex(), theme: RawTheme? = null,
+    colorMap: Array<String>? = null, loadGrammar: (suspend (scopeName: ScopeName) -> RawGrammar?)? = null,
+    getInjections: ((scopeName: ScopeName) -> Array<ScopeName>?)? = null
+): Registry {
+    return Registry(RegistryOptions(regexLib, theme, colorMap, loadGrammar, getInjections))
+}
+
+lateinit var globalRegexLib: RegexLib
+
 open class RegistryOptions(
     open val regexLib: RegexLib = StandardRegex(),
     val theme: RawTheme? = null,
@@ -84,6 +97,11 @@ data class GrammarConfiguration(
  * The registry that will hold all grammars.
  */
 class Registry(val options: RegistryOptions) {
+
+    init {
+        globalRegexLib = options.regexLib
+    }
+
     private val syncRegistry: SyncRegistry = SyncRegistry(
         Theme.createFromRawTheme(options.theme, options.colorMap), options.regexLib
     )

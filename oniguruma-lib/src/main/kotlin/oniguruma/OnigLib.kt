@@ -1,6 +1,6 @@
 package oniguruma
 
-import org.codroid.textmate.regex.RegexExp
+import org.codroid.textmate.regex.RegularExp
 import org.codroid.textmate.regex.RegexLib
 import org.codroid.textmate.regex.RegexMatch
 import org.codroid.textmate.regex.RegexScanner
@@ -27,7 +27,7 @@ class OnigLib : RegexLib {
     override fun createScanner(source: Array<String>): RegexScanner {
         return OnigScanner(source)
     }
-    override fun compile(pattern: String): RegexExp {
+    override fun compile(pattern: String): RegularExp {
         return OnigRegExp(pattern)
     }
 
