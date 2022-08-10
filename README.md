@@ -14,10 +14,10 @@ For `build.gradle.kts`:
 
 ```kotlin
 dependencies { 
-    implementation("org.codroid:codroid-textmate:1.0.0")
+    implementation("org.codroid:codroid-textmate:1.0.1")
     
     // Optional but recommended.
-    implementation("org.codroid:oniguruma-lib:1.0.0")
+    implementation("org.codroid:oniguruma-lib:1.0.1")
 }
 ```
 
