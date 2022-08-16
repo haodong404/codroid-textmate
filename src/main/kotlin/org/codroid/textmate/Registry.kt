@@ -59,7 +59,7 @@ class SyncRegistry(
     /**
      * Lookup a grammar
      */
-    suspend fun grammarForScopeName(
+    fun grammarForScopeName(
         scopeName: ScopeName,
         initialLanguage: Int,
         embeddedLanguages: EmbeddedLanguagesMap?,

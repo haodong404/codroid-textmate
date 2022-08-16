@@ -23,7 +23,7 @@ typealias EmbeddedLanguagesMap = HashMap<ScopeName, Int>
  */
 fun createRegistry(
     regexLib: RegexLib = StandardRegex(), theme: RawTheme? = null,
-    colorMap: Array<String>? = null, loadGrammar: (suspend (scopeName: ScopeName) -> RawGrammar?)? = null,
+    colorMap: Array<String>? = null, loadGrammar: ((scopeName: ScopeName) -> RawGrammar?)? = null,
     getInjections: ((scopeName: ScopeName) -> Array<ScopeName>?)? = null
 ): Registry {
     return Registry(RegistryOptions(regexLib, theme, colorMap, loadGrammar, getInjections))
@@ -35,7 +35,7 @@ open class RegistryOptions(
     open val regexLib: RegexLib = StandardRegex(),
     val theme: RawTheme? = null,
     val colorMap: Array<String>? = null,
-    val loadGrammar: (suspend (scopeName: ScopeName) -> RawGrammar?)? = null,
+    val loadGrammar: ((scopeName: ScopeName) -> RawGrammar?)? = null,
     val getInjections: ((scopeName: ScopeName) -> Array<ScopeName>?)? = null
 )
 
@@ -128,7 +128,7 @@ class Registry(val options: RegistryOptions) {
      * Load the grammar for `scopeName` and all referenced included grammars asynchronously.
      * Please do not use language id 0.
      */
-    suspend fun loadGrammarWithEmbeddedLanguages(
+    fun loadGrammarWithEmbeddedLanguages(
         initialScopeName: ScopeName, initialLanguage: Int, embeddedLanguages: EmbeddedLanguagesMap
     ): Tokenizer =
         this.loadGrammarWithConfiguration(initialScopeName, initialLanguage, GrammarConfiguration(embeddedLanguages))
@@ -137,7 +137,7 @@ class Registry(val options: RegistryOptions) {
      * Load the grammar for `scopeName` and all referenced included grammars asynchronously.
      * Please do not use language id 0.
      */
-    suspend fun loadGrammarWithConfiguration(
+    fun loadGrammarWithConfiguration(
         initialScopeName: ScopeName, initialLanguage: Int, configuration: GrammarConfiguration
     ): Tokenizer = this.loadGrammar(
         initialScopeName,
@@ -153,10 +153,10 @@ class Registry(val options: RegistryOptions) {
     /**
      * Load the grammar for `scopeName` and all referenced included grammars asynchronously.
      */
-    suspend fun loadGrammar(initialScopeName: ScopeName): Tokenizer =
+    fun loadGrammar(initialScopeName: ScopeName): Tokenizer =
         this.loadGrammar(initialScopeName, 0, null, null, null)
 
-    private suspend fun loadGrammar(
+    private fun loadGrammar(
         initialScopeName: ScopeName,
         initialLanguage: Int,
         embeddedLanguages: EmbeddedLanguagesMap?,
@@ -179,14 +179,14 @@ class Registry(val options: RegistryOptions) {
         )!!
     }
 
-    private suspend fun loadSingleGrammar(scopeName: ScopeName): Boolean {
+    private fun loadSingleGrammar(scopeName: ScopeName): Boolean {
         if (!this.ensureGrammarCache.containsKey(scopeName)) {
             this.ensureGrammarCache[scopeName] = this.doLoadSingleGrammar(scopeName)
         }
         return this.ensureGrammarCache[scopeName] ?: false
     }
 
-    private suspend fun doLoadSingleGrammar(scopeName: ScopeName): Boolean {
+    private fun doLoadSingleGrammar(scopeName: ScopeName): Boolean {
         val grammar = this.options.loadGrammar?.let { it(scopeName) }
         if (grammar != null) {
             val injections = if (this.options.getInjections != null) {
@@ -203,7 +203,7 @@ class Registry(val options: RegistryOptions) {
     /**
      * Adds a rawGrammar.
      */
-    suspend fun addGrammar(
+    fun addGrammar(
         rawGrammar: RawGrammar,
         injections: Array<String> = emptyArray(),
         initialLanguage: Int = 0,
@@ -216,7 +216,7 @@ class Registry(val options: RegistryOptions) {
     /**
      * Get the grammar for `scopeName`. The grammar must first be created via `loadGrammar` or `addGrammar`.
      */
-    private suspend fun grammarForScopeName(
+    private fun grammarForScopeName(
         scopeName: String,
         initialLanguage: Int = 0,
         embeddedLanguages: EmbeddedLanguagesMap? = null,

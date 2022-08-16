@@ -13,9 +13,10 @@ tasks.dokkaHtml.configure {
     outputDirectory.set(rootDir.resolve("docs"))
 }
 
+@Suppress("UnstableApiUsage")
 allprojects {
     group = "org.codroid"
-    version = "1.0.1"
+    version = "1.0.2"
     plugins.withId("com.vanniktech.maven.publish.base") {
         mavenPublishing {
             pomFromGradleProperties()

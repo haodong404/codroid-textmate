@@ -63,7 +63,7 @@ class ThemeTest(
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    suspend fun evaluate() {
+    fun evaluate() {
         this.tests.map { it.evaluate() }
         val actual: ThemesTokens = mutableMapOf()
         for (test in tests) {
@@ -98,11 +98,11 @@ class SingleThemeTest(
 ) {
     var actual: Array<ThemedToken>? = null
 
-    suspend fun evaluate() {
+    fun evaluate() {
         this.actual = this.tokenizeWithThemeAsync()
     }
 
-    private suspend fun tokenizeWithThemeAsync(): Array<ThemedToken> {
+    private fun tokenizeWithThemeAsync(): Array<ThemedToken> {
         val grammar =
             this.themeData.registry.loadGrammarWithEmbeddedLanguages(
                 this.initialScopeName,
