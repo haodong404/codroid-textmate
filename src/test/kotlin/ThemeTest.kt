@@ -13,7 +13,7 @@ typealias ThemesTokens = MutableMap<String, Array<ThemedToken>>
 class ThemeTest(
     testFile: File, themeData: Array<ThemeData>, resolver: Resolver
 ) {
-    private val expectedFile = themeFile("tests/$testFile.result")
+    private val expectedFile = themeFile("tests/${testFile.name}.result")
     private val tests = mutableListOf<SingleThemeTest>()
     val expected = normalizeNewLines(
         String(
@@ -64,13 +64,20 @@ class ThemeTest(
 
     @OptIn(ExperimentalSerializationApi::class)
     fun evaluate() {
-        this.tests.map { it.evaluate() }
+        this.tests.map {
+             it.evaluate()
+        }
         val actual: ThemesTokens = mutableMapOf()
         for (test in tests) {
             actual[test.themeData.themeName] = test.actual!!
         }
+        val json = Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+            prettyPrintIndent = "\t"
+        }
         this.actual = normalizeNewLines(
-            Json { ignoreUnknownKeys = true }.encodeToString(
+            json.encodeToString(
                 MapSerializer(
                     String.serializer(),
                     ArraySerializer(ThemedToken.serializer())

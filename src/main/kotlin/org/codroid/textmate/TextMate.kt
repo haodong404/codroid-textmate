@@ -35,8 +35,8 @@ open class RegistryOptions(
     open val regexLib: RegexLib = StandardRegex(),
     val theme: RawTheme? = null,
     val colorMap: Array<String>? = null,
-    val loadGrammar: ((scopeName: ScopeName) -> RawGrammar?)? = null,
-    val getInjections: ((scopeName: ScopeName) -> Array<ScopeName>?)? = null
+    open val loadGrammar: ((scopeName: ScopeName) -> RawGrammar?)? = null,
+    open val getInjections: ((scopeName: ScopeName) -> Array<ScopeName>?)? = null
 )
 
 
@@ -190,7 +190,7 @@ class Registry(val options: RegistryOptions) {
         val grammar = this.options.loadGrammar?.let { it(scopeName) }
         if (grammar != null) {
             val injections = if (this.options.getInjections != null) {
-                this.options.getInjections.invoke(scopeName)
+                this.options.getInjections?.invoke(scopeName)
             } else {
                 null
             }

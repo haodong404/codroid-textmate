@@ -41,7 +41,7 @@ class ThemeInfo(
         val theme = loadThemeFile(this.fileName)
         if (includeFilename != null) {
             val includeTheme = loadThemeFile(this.includeFilename)
-            theme.settings = theme.settings?.plus(includeTheme.settings!!)
+            theme.settings = includeTheme.settings?.plus(theme.settings!!)
         }
         val registry = Registry(resolver)
         registry.setTheme(theme, null)
@@ -77,7 +77,7 @@ class ThemesTest {
         val grammars =
             parseJson<Array<GrammarRegistration>>(themeFile("grammars.json")!!.inputStream())
         for (grammar in grammars) {
-            grammar.path = themeFile(grammar.path).toString()
+            grammar.path = grammar.path.replaceFirst(".", "themes")
         }
 
         val languages =
@@ -95,6 +95,9 @@ class ThemesTest {
 
         for (testFile in testFiles ?: emptyArray()) {
             val themeTest = ThemeTest(testFile, themeData.toTypedArray(), resolver)
+            // The java port Oniguruma lib is not perfect now, it cannot match non-ASCII characters
+            if (themeTest.testName == "test-7115.xml") continue
+            themeTest.evaluate()
             print("ThemeTesting: ${themeTest.testName.padEnd(30)}")
             assertEquals(themeTest.expected, themeTest.actual)
             println("√")
@@ -108,11 +111,12 @@ class ThemesTest {
                 settings = arrayOf(
                     RawThemeSetting(settings = Setting(foreground = "#100000", background = "#200000")),
                     RawThemeSetting(
-                        scopesStr = "punctuation.definition.string.begin.html",
+                        scope = arrayOf("punctuation.definition.string.begin.html"),
                         settings = Setting(foreground = "#300000")
                     ),
                     RawThemeSetting(
-                        scopesStr = "meta.tag punctuation.definition.string", settings = Setting(foreground = "#400000")
+                        scope = arrayOf("meta.tag punctuation.definition.string"),
+                        settings = Setting(foreground = "#400000")
                     )
                 )
             )
@@ -124,21 +128,38 @@ class ThemesTest {
 
     @Test
     fun `Theme matching gives higher priority to parent matches 1`() {
+        val themeJson = """
+            {
+                "settings": [
+                    {
+                        "settings": {
+                            "foreground": "#100000",
+                            "background": "#200000"
+                        }   
+                    },
+                    {
+                        "scope": "c a",
+                        "settings": {
+                            "foreground": "#300000"
+                        }
+                    },
+                    {
+                        "scope": "d a.b",
+                        "settings": {
+                            "foreground": "#400000"
+                        }
+                    },
+                    {
+                        "scope": "a",
+                        "settings": {
+                            "foreground": "#500000"
+                        }
+                    }
+                ]
+            }
+        """.trimIndent()
         val theme = Theme.createFromRawTheme(
-            source = RawTheme(
-                settings = arrayOf(
-                    RawThemeSetting(settings = Setting(foreground = "#100000", background = "#200000")),
-                    RawThemeSetting(
-                        scopesStr = "c a", settings = Setting(foreground = "#300000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "d a.b", settings = Setting(foreground = "#400000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "a", settings = Setting(foreground = "#500000")
-                    )
-                )
-            )
+            source = parseJson(themeJson.byteInputStream())
         )
         val map = theme.getColorMap()
         val id = theme.match(ScopeStack.from("d", "a.b"))?.foregroundId!!
@@ -147,21 +168,38 @@ class ThemesTest {
 
     @Test
     fun `Theme matching gives higher priority to parent matches 2`() {
+        val json = """
+            {
+                "settings":[
+                    {
+                        "settings":{
+                            "foreground": "#100000",
+                            "background": "#200000"
+                        }
+                    },
+                    {
+                        "scope": "meta.tag entity", 
+                        "settings": {
+                            "foreground": "#300000"
+                        }
+                    },
+                    {
+                        "scope": "meta.selector.css entity.name.tag", 
+                        "settings": {
+                            "foreground": "#400000"
+                        }
+                    },
+                    {
+                        "scope": "entity", 
+                        "settings": {
+                            "foreground": "#500000"
+                        }
+                    }
+                ]
+            }
+        """
         val theme = Theme.createFromRawTheme(
-            source = RawTheme(
-                settings = arrayOf(
-                    RawThemeSetting(settings = Setting(foreground = "#100000", background = "#200000")),
-                    RawThemeSetting(
-                        scopesStr = "meta.tag entity", settings = Setting(foreground = "#300000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "meta.selector.css entity.name.tag", settings = Setting(foreground = "#400000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "entity", settings = Setting(foreground = "#500000")
-                    )
-                )
-            )
+            source = parseJson(json.byteInputStream())
         )
         val result = theme.match(
             ScopeStack.from(
@@ -177,39 +215,24 @@ class ThemesTest {
 
     @Test
     fun `Theme matching can match`() {
+        val json = """
+            {
+                "settings": [
+                    { "settings": { "foreground": "#F8F8F2", "background": "#272822" } },
+                    { "scope": "source, something", "settings": { "background": "#100000" } },
+                    { "scope": ["bar", "baz"], "settings": { "background": "#200000" } },
+                    { "scope": "source.css selector bar", "settings": { "fontStyle": "bold" } },
+                    { "scope": "constant", "settings": { "fontStyle": "italic", "foreground": "#300000" } },
+                    { "scope": "constant.numeric", "settings": { "foreground": "#400000" } },
+                    { "scope": "constant.numeric.hex", "settings": { "fontStyle": "bold" } },
+                    { "scope": "constant.numeric.oct", "settings": { "fontStyle": "bold italic underline" } },
+                    { "scope": "constant.numeric.dec", "settings": { "fontStyle": "", "foreground": "#500000" } },
+                    { "scope": "storage.object.bar", "settings": { "fontStyle": "", "foreground": "#600000" } }
+		        ]
+	        }
+        """.trimIndent()
         val theme = Theme.createFromRawTheme(
-            source = RawTheme(
-                settings = arrayOf(
-                    RawThemeSetting(settings = Setting(foreground = "#F8F8F2", background = "#272822")),
-                    RawThemeSetting(
-                        scopesStr = "source, something", settings = Setting(background = "#100000")
-                    ),
-                    RawThemeSetting(
-                        scopes = arrayOf("bar", "baz"), settings = Setting(background = "#200000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "source.css selector bar", settings = Setting(fontStyle = "bold")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant", settings = Setting(fontStyle = "italic", foreground = "#300000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric", settings = Setting(foreground = "#400000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric.hex", settings = Setting(fontStyle = "bold")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric.oct", settings = Setting(fontStyle = "bold italic underline")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric.dec", settings = Setting(fontStyle = "", foreground = "#500000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "storage.object.bar", settings = Setting(fontStyle = "", foreground = "#600000")
-                    ),
-                )
-            )
+            source = parseJson(json.byteInputStream())
         )
 
         val map = theme.getColorMap()
@@ -277,25 +300,37 @@ class ThemesTest {
 
     @Test
     fun `Theme matching Microsoft vscode#23460`() {
+        val json = """
+            {
+                "settings": [
+                    {
+                        "settings": {
+                            "foreground": "#aec2e0",
+                            "background": "#14191f"
+                        }
+                    }, {
+                        "name": "JSON String",
+                        "scope": "meta.structure.dictionary.json string.quoted.double.json",
+                        "settings": {
+                            "foreground": "#FF410D"
+                        }
+                    }, {
+                        "scope": "meta.structure.dictionary.json string.quoted.double.json",
+                        "settings": {
+                            "foreground": "#ffffff"
+                        }
+                    },
+                    {
+                        "scope": "meta.structure.dictionary.value.json string.quoted.double.json",
+                        "settings": {
+                            "foreground": "#FF410D"
+                        }
+                    }
+                ]
+	        }
+        """.trimIndent()
         val theme = Theme.createFromRawTheme(
-            source = RawTheme(
-                settings = arrayOf(
-                    RawThemeSetting(settings = Setting(foreground = "#aec2e0", background = "#14191f")),
-                    RawThemeSetting(
-                        name = "JSON String",
-                        scopesStr = "meta.structure.dictionary.json string.quoted.double.json",
-                        settings = Setting(foreground = "#FF410D")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "meta.structure.dictionary.json string.quoted.double.json",
-                        settings = Setting(foreground = "#ffffff")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "meta.structure.dictionary.value.json string.quoted.double.json",
-                        settings = Setting(foreground = "#FF410D")
-                    )
-                )
-            )
+            source = parseJson(json.byteInputStream())
         )
         val path = ScopeStack.from(
             "source.json",
@@ -310,44 +345,25 @@ class ThemesTest {
 
     @Test
     fun `Theme parsing can parse`() {
+        val json = """
+            {
+                "settings": [
+                    { "settings": { "foreground": "#F8F8F2", "background": "#272822" } },
+                    { "scope": "source, something", "settings": { "background": "#100000" } },
+                    { "scope": ["bar", "baz"], "settings": { "background": "#010000" } },
+                    { "scope": "source.css selector bar", "settings": { "fontStyle": "bold" } },
+                    { "scope": "constant", "settings": { "fontStyle": "italic", "foreground": "#ff0000" } },
+                    { "scope": "constant.numeric", "settings": { "foreground": "#00ff00" } },
+                    { "scope": "constant.numeric.hex", "settings": { "fontStyle": "bold" } },
+                    { "scope": "constant.numeric.oct", "settings": { "fontStyle": "bold italic underline" } },
+                    { "scope": "constant.numeric.bin", "settings": { "fontStyle": "bold strikethrough" } },
+                    { "scope": "constant.numeric.dec", "settings": { "fontStyle": "", "foreground": "#0000ff" } },
+                    { "scope": "foo", "settings": { "fontStyle": "", "foreground": "#CFA" } }
+                ]
+            }
+        """.trimIndent()
         val actual = parseTheme(
-            RawTheme(
-                settings = arrayOf(
-                    RawThemeSetting(
-                        settings = Setting(foreground = "#F8F8F2", background = "#272822")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "source, something", settings = Setting(background = "#100000")
-                    ),
-                    RawThemeSetting(
-                        scopes = arrayOf("bar", "baz"), settings = Setting(background = "#010000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "source.css selector bar", settings = Setting(fontStyle = "bold")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant", settings = Setting(fontStyle = "italic", foreground = "#ff0000")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric", settings = Setting(foreground = "#00ff00")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric.hex", settings = Setting(fontStyle = "bold")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric.oct", settings = Setting(fontStyle = "bold italic underline")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric.bin", settings = Setting(fontStyle = "bold strikethrough")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "constant.numeric.dec", settings = Setting(fontStyle = "", foreground = "#0000ff")
-                    ),
-                    RawThemeSetting(
-                        scopesStr = "foo", settings = Setting(fontStyle = "", foreground = "#CFA")
-                    ),
-                )
-            )
+            parseJson(json.byteInputStream())
         )
         val expected = mutableListOf(
             ParsedThemeRule("", null, 0, FontStyleConsts.NotSet, "#F8F8F2", "#272822"),
@@ -833,7 +849,7 @@ class ThemesTest {
                 ), arrayListOf(), TrieChildrenMap().apply {
                     this["var"] = ThemeTrieElement(
                         ThemeTrieElementRule(1, null, FontStyleConsts.Bold, c, notSet),
-                        mutableListOf(
+                        arrayListOf(
                             ThemeTrieElementRule(
                                 1,
                                 listOf("source.css"),
@@ -845,7 +861,7 @@ class ThemesTest {
                         TrieChildrenMap().apply {
                             this["identifier"] = ThemeTrieElement(
                                 ThemeTrieElementRule(2, null, FontStyleConsts.Bold, e, notSet),
-                                mutableListOf(
+                                arrayListOf(
                                     ThemeTrieElementRule(
                                         1,
                                         listOf("source.css"),
@@ -875,33 +891,33 @@ class ThemesTest {
                         )
                     ), RawThemeSetting(
                         name = "Variable",
-                        scopesStr = "variable",
+                        scope = arrayOf("variable"),
                         settings = Setting(
                             fontStyle = ""
                         )
                     ), RawThemeSetting(
                         name = "Function argument",
-                        scopesStr = "variable.parameter",
+                        scope = arrayOf("variable.parameter"),
                         settings = Setting(
                             fontStyle = "italic",
                             foreground = ""
                         )
                     ), RawThemeSetting(
                         name = "Library variable",
-                        scopesStr = "support.other.variable",
+                        scope = arrayOf("support.other.variable"),
                         settings = Setting(
                             fontStyle = ""
                         )
                     ), RawThemeSetting(
                         name = "Function argument",
-                        scopesStr = "variable.other",
+                        scope = arrayOf("variable.other"),
                         settings = Setting(
                             foreground = "",
                             fontStyle = "normal"
                         )
                     ), RawThemeSetting(
                         name = "Coffeescript Function argument",
-                        scopesStr = "variable.parameter.function.coffee",
+                        scope = arrayOf("variable.parameter.function.coffee"),
                         settings = Setting(
                             foreground = "#F9D423",
                             fontStyle = "italic"
@@ -924,30 +940,33 @@ class ThemesTest {
 
     @Test
     fun `Theme resolving issue #35, Trailing comma in a tmTheme scope selector`() {
+        val json = """
+            {
+                "settings": [{
+                    "settings": {
+                        "background": "#25292C",
+                        "foreground": "#EFEFEF"
+                    }
+                }, {
+                    "name": "CSS at-rule keyword control",
+                    "scope": "${
+            arrayOf(
+                "meta.at-rule.return.scss,",
+                "meta.at-rule.return.scss punctuation.definition,",
+                "meta.at-rule.else.scss,",
+                "meta.at-rule.else.scss punctuation.definition,",
+                "meta.at-rule.if.scss,",
+                "meta.at-rule.if.scss punctuation.definition,"
+            ).joinToString("\n")
+        }",
+                    "settings": {
+                        "foreground": "#CC7832"
+                    }
+                }]
+            }
+        """.trimIndent()
         val actual = parseTheme(
-            RawTheme(
-                settings = arrayOf(
-                    RawThemeSetting(
-                        settings = Setting(
-                            background = "#25292C",
-                            foreground = "#EFEFEF"
-                        )
-                    ), RawThemeSetting(
-                        name = "CSS at-rule keyword control",
-                        scopesStr = arrayOf(
-                            "meta.at-rule.return.scss,",
-                            "meta.at-rule.return.scss punctuation.definition,",
-                            "meta.at-rule.else.scss,",
-                            "meta.at-rule.else.scss punctuation.definition,",
-                            "meta.at-rule.if.scss,",
-                            "meta.at-rule.if.scss punctuation.definition,"
-                        ).joinToString("\n"),
-                        settings = Setting(
-                            foreground = "#CC7832"
-                        )
-                    )
-                )
-            )
+            parseJson(json.byteInputStream())
         )
         val expected = mutableListOf(
             ParsedThemeRule("", null, 0, FontStyleConsts.NotSet, "#EFEFEF", "#25292C"),

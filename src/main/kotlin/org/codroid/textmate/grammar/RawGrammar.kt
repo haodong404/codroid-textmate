@@ -19,7 +19,7 @@ data class RawGrammar(
     val repository: RawRepository = RawRepository(),
     val scopeName: ScopeName = "",
     val patterns: Array<RawRule> = arrayOf(),
-    val injections: HashMap<String, RawRule>? = null,
+    val injections: Map<String, RawRule> = emptyMap(),
     val injectionSelector: String? = null,
 
     val fileTypes: Array<String>? = null,
@@ -33,7 +33,13 @@ data class RawGrammar(
     )
 
     public override fun clone(): RawGrammar = RawGrammar(
-        repository, scopeName, patterns, injections, injectionSelector, fileTypes, name, firstLineMatch
+        repository.deepClone(),
+        scopeName,
+        patterns.deepClone(),
+        injections.deepClone(),
+        injectionSelector,
+        fileTypes?.copyOf(),
+        name, firstLineMatch
     )
 
 }
@@ -76,7 +82,36 @@ data class RawRule(
      */
     @Serializable(with = IntBooleanSerializer::class)
     val applyEndPatternLast: Boolean? = null
-)
+) : Cloneable {
+    public override fun clone(): RawRule {
+        return RawRule(
+            id?.clone(),
+            include, name, contentName, match,
+            captures?.deepClone(),
+            begin,
+            beginCaptures?.deepClone(), end,
+            endCaptures?.deepClone(),
+            while_, whileCaptures?.deepClone(),
+            patterns?.deepClone(),
+            repository?.deepClone(),
+            applyEndPatternLast
+        )
+    }
+}
 
 // String: captureId
 typealias RawCaptures = HashMap<String, RawRule>
+
+fun Map<String, RawRule>.deepClone(): HashMap<String, RawRule> {
+    return HashMap<String, RawRule>(this.size).apply new@{
+        this@deepClone.forEach {
+            this@new.put(it.key, it.value.clone())
+        }
+    }
+}
+
+fun Array<RawRule>.deepClone(): Array<RawRule> {
+    return Array(this.size) {
+        this[it].clone()
+    }
+}

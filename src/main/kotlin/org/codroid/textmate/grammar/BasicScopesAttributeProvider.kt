@@ -28,7 +28,8 @@ class BasicScopesAttributeProvider(initialLanguageId: Int, embeddedLanguages: Em
     }
 
     private val getBasicScopeAttributes = CachedFn<ScopeName, BasicScopeAttributes> {
-        BasicScopeAttributes(scopeToLanguage(it), toStandardTokenType(it))
+        val languageId = scopeToLanguage(it)
+        BasicScopeAttributes(languageId, toStandardTokenType(it))
     }
 
     /**
@@ -71,7 +72,10 @@ class ScopeMatcher<V>(private val values: Map<ScopeName, V>? = null) {
             val m = it.findAll(scope).toList()
             if (m.isNotEmpty()) {
                 // matched
-                return values!![m[1].value]
+                m.getOrNull(1)?.let { result ->
+                    return this.values?.get(result.value)
+                }
+                return this.values?.get(m[0].groups[1]?.value)
             }
         }
         return null

@@ -26,11 +26,11 @@ class ColorMap(colorMap: Array<String>? = null) {
             return value
         }
         if (this.isFrozen) {
-            throw IllegalArgumentException("Missing color in color map - $color")
+            throw IllegalArgumentException("Missing color in color map - $colorUpper")
         }
         value = ++this.lastColorId
-        color2id[color] = value
-        id2color[value] = color
+        color2id[colorUpper] = value
+        id2color[value] = colorUpper
         return value
     }
 

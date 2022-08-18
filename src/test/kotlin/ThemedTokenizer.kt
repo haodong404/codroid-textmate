@@ -1,6 +1,9 @@
 import kotlinx.serialization.Serializable
 import org.codroid.textmate.EncodedTokenAttributes
+import org.codroid.textmate.Registry
+import org.codroid.textmate.SyncRegistry
 import org.codroid.textmate.Tokenizer
+import org.codroid.textmate.grammar.Grammar
 import org.codroid.textmate.grammar.StateStack
 
 @Serializable
@@ -27,7 +30,7 @@ fun tokenizeWithTheme(colorMap: Map<UInt, String>, fileContents: String, grammar
             val metadata = result.tokens[2 * j + 1]
             val foreground = EncodedTokenAttributes.getForeground(metadata)
             val foregroundColor = colorMap[foreground]
-            actual.add(ThemedToken(tokenText, foregroundColor!!))
+            actual.add(ThemedToken(tokenText, foregroundColor!!.uppercase()))
         }
         ruleStack = result.ruleStack
     }

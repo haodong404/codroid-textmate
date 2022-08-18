@@ -14,6 +14,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromStream
 import org.codroid.textmate.grammar.RawGrammar
+import org.codroid.textmate.grammar.RawRule
 import java.io.InputStream
 
 fun basename(path: String): String {
@@ -24,12 +25,6 @@ fun basename(path: String): String {
     }
 }
 
-inline fun <reified T : Cloneable> MutableList<T>.clone(): MutableList<T> {
-    val cloned = MutableList(this.size) {
-        this[it]
-    }
-    return cloned
-}
 
 object RegexSource {
 

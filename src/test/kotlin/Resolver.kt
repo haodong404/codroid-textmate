@@ -48,6 +48,20 @@ class Resolver(
 ) : RegistryOptions(regexLib) {
     val language2id = mutableMapOf<String, Int>()
     val id2language = mutableMapOf<Int, String>()
+
+    override val loadGrammar: ((scopeName: ScopeName) -> RawGrammar?)
+        get() = grammar@{ scopeName ->
+            for (grammar in grammars) {
+                if (grammar.scopeName == scopeName) {
+                    if (grammar.grammar == null) {
+                        grammar.grammar = readGrammarFromPath(grammar.path)
+                    }
+                    return@grammar grammar.grammar
+                }
+            }
+            return@grammar null
+        }
+
     private var lastLanguageId = 0
 
     init {
@@ -91,17 +105,6 @@ class Resolver(
         throw TextMateException("Could not findGrammarByLanguage for $language")
     }
 
-    fun loadGrammar(scopeName: ScopeName): RawGrammar? {
-        for (grammar in grammars) {
-            if (grammar.scopeName == scopeName) {
-                if (grammar.grammar == null) {
-                    grammar.grammar = readGrammarFromPath(grammar.path)
-                }
-                return grammar.grammar
-            }
-        }
-        return null
-    }
 }
 
 fun readGrammarFromPath(path: String): RawGrammar {

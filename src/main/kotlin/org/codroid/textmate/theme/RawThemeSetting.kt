@@ -1,11 +1,18 @@
 package org.codroid.textmate.theme
 
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ArraySerializer
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonTransformingSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.*
+import org.codroid.textmate.IntBooleanSerializer
+import org.codroid.textmate.ListDecoder
+import org.codroid.textmate.NSObjDecoder
+import org.codroid.textmate.json
 
 @Serializable
 data class Setting(
@@ -33,9 +40,8 @@ data class Setting(
 data class RawThemeSetting(
     var name: String? = null,
 
-    @Serializable(with = RawThemeSettingSerializer::class)
-    var scopes: Array<ScopePattern>? = null,
-    var scopesStr: String? = null,
+    @Serializable(with = RawThemeSettingScopeSerializer::class)
+    var scope: Array<ScopePattern>? = null,
     var settings: Setting? = null,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -45,7 +51,7 @@ data class RawThemeSetting(
         other as RawThemeSetting
 
         if (name != other.name) return false
-        if (!scopesStr.contentEquals(other.scopesStr)) return false
+        if (!scope.contentEquals(other.scope)) return false
         if (settings != other.settings) return false
 
         return true
@@ -53,19 +59,53 @@ data class RawThemeSetting(
 
     override fun hashCode(): Int {
         var result = name.hashCode()
-        result = 31 * result + scopesStr.hashCode()
+        result = 31 * result + scope.hashCode()
         result = 31 * result + settings.hashCode()
         return result
     }
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-object RawThemeSettingSerializer :
-    JsonTransformingSerializer<Array<RawThemeSetting>>(ArraySerializer(RawThemeSetting.serializer())) {
-    override fun transformDeserialize(element: JsonElement): JsonElement {
-        if (element !is JsonArray) {
-            return JsonArray(listOf(element))
+object RawThemeSettingScopeSerializer :
+    KSerializer<Array<String>> {
+
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("RawThemeSettingScope", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Array<String> {
+        if (decoder is NSObjDecoder) {
+            return deserializeWithNSObjectDecoder(decoder)
         }
-        return element
+        val jsonElement = (decoder as JsonDecoder).decodeJsonElement()
+        if (jsonElement !is JsonArray) {
+            jsonElement.jsonPrimitive.content.let {
+                return scopesConstruct(it)
+            }
+        }
+        return jsonElement.jsonArray.map {
+            it.jsonPrimitive.content
+        }.toTypedArray()
+    }
+
+    private fun deserializeWithNSObjectDecoder(decoder: NSObjDecoder): Array<String> {
+        val result = decoder.decodeValue()
+        if (result is String) {
+            return scopesConstruct(result)
+        }
+        return result as Array<String>
+    }
+
+    private fun scopesConstruct(scopes: String): Array<String> {
+        val scope = StringBuilder(scopes.trim())
+        if (scope.startsWith(',')) {   // remove leading commas
+            scope.deleteAt(0)
+        }
+        if (scope.endsWith(',')) {  // remove trailing commas
+            scope.deleteAt(scope.length - 1)
+        }
+        return scope.split(',').toTypedArray()
+    }
+
+    override fun serialize(encoder: Encoder, value: Array<String>) {
+        TODO("Not yet implemented")
     }
 }

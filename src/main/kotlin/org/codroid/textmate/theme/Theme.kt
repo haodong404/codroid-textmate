@@ -26,7 +26,9 @@ class Theme(
 
         fun createFromParsedTheme(
             source: MutableList<ParsedThemeRule>, colorMap: Array<String>? = null
-        ): Theme = resolveParsedThemeRules(source, colorMap)
+        ): Theme {
+            return resolveParsedThemeRules(source, colorMap)
+        }
     }
 
     private val cachedMatchRoot = CachedFn<ScopeName, List<ThemeTrieElementRule>> {
@@ -68,7 +70,7 @@ class Theme(
     }
 
     override fun toString(): String {
-        return "Theme(colorMap=$colorMap, defaults=$defaults, root=$root, cachedMatchRoot=$cachedMatchRoot)"
+        return "Theme(colorMap=$colorMap, defaults=$defaults)"
     }
 
 }
@@ -123,17 +125,8 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
     if (settings != null) {
         for ((idx, setting) in settings.withIndex()) {
             val scopes = mutableListOf<String>()
-            if (setting.scopesStr != null) {
-                val scope = StringBuilder(setting.scopesStr!!.trim())
-                if (scope.startsWith(',')) {   // remove leading commas
-                    scope.deleteAt(0)
-                }
-                if (scope.endsWith(',')) {  // remove trailing commas
-                    scope.deleteAt(scope.length - 1)
-                }
-                scopes.addAll(scope.split(','))
-            } else if (setting.scopes != null) {
-                scopes.addAll(setting.scopes!!)
+            if (setting.scope != null) {
+                scopes.addAll(setting.scope ?: emptyArray())
             } else {
                 scopes.add("")
             }
@@ -226,8 +219,7 @@ private fun resolveParsedThemeRules(
         parsedThemeRulesClone.add(item)
     }
     while (parsedThemeRulesClone.isNotEmpty() && parsedThemeRulesClone.first.scope.isEmpty()) {
-        val incomingDefaults = parsedThemeRulesClone.first
-        parsedThemeRulesClone.removeFirst()
+        val incomingDefaults = parsedThemeRulesClone.removeFirst()
         if (incomingDefaults.fontStyle != FontStyleConsts.NotSet) {
             defaultFontStyle = incomingDefaults.fontStyle
         }

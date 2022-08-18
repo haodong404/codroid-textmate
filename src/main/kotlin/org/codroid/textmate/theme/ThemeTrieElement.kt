@@ -1,47 +1,14 @@
 package org.codroid.textmate.theme
 
-import org.codroid.textmate.clone
-import org.codroid.textmate.strLisCmp
 
 class ThemeTrieElement(
     private val mainRule: ThemeTrieElementRule,
-    private val rulesWithParentScopes: MutableList<ThemeTrieElementRule> = arrayListOf(),
+    private val rulesWithParentScopes: MutableList<ThemeTrieElementRule> = mutableListOf(),
     private val children: TrieChildrenMap = TrieChildrenMap()
 ) {
-    companion object {
-        private fun sortBySpecificity(arr: MutableList<ThemeTrieElementRule>): List<ThemeTrieElementRule> {
-            if (arr.size == 1) return arr
-            arr.sortWith(::cmpBySpecificity)
-            return arr
-        }
-
-        private fun cmpBySpecificity(a: ThemeTrieElementRule, b: ThemeTrieElementRule): Int {
-            if (a.scopeDepth == b.scopeDepth) {
-                a.parentScopes?.let { aa ->
-                    b.parentScopes?.let { bb ->
-                        if (aa.size == bb.size) {
-                            for (i in aa.indices) {
-                                val aLen = aa[i].length
-                                val bLen = bb[i].length
-                                if (aLen != bLen) {
-                                    return bLen - aLen
-                                }
-                            }
-                        } else {
-                            return bb.size - aa.size
-                        }
-                    }
-                }
-                return 0
-            }
-            return b.scopeDepth - a.scopeDepth
-        }
-    }
-
     fun match(scope: ScopeName): List<ThemeTrieElementRule> {
         if (scope.isEmpty()) {
-            this.rulesWithParentScopes.add(mainRule)
-            return sortBySpecificity(rulesWithParentScopes)
+            return listOf(mainRule).plus(rulesWithParentScopes).sorted()
         }
         val dotIndex = scope.indexOf('.')
         val head: String
@@ -56,8 +23,7 @@ class ThemeTrieElement(
         if (this.children.containsKey(head)) {
             return this.children[head]!!.match(tail)
         }
-        this.rulesWithParentScopes.add(mainRule)
-        return sortBySpecificity(rulesWithParentScopes)
+        return listOf(mainRule).plus(rulesWithParentScopes).sorted()
     }
 
     fun insert(
@@ -87,13 +53,19 @@ class ThemeTrieElement(
         if (children.containsKey(head)) {
             child = children[head]!!
         } else {
-            child = ThemeTrieElement(mainRule.clone(), rulesWithParentScopes.clone())
+            child = ThemeTrieElement(mainRule.clone(), rulesWithParentScopes.deepClone().toMutableList())
             children[head] = child
         }
 
         child.insert(
             scopeDepth + 1, tail, parentScopes, fontStyle, foreground, background
         )
+    }
+
+    private fun List<ThemeTrieElementRule>.deepClone(): List<ThemeTrieElementRule> {
+        return this.map {
+            it.clone()
+        }
     }
 
     private fun doInsertHere(
@@ -106,7 +78,7 @@ class ThemeTrieElement(
         }
         // Try to merge into existing rule
         for (rule in rulesWithParentScopes) {
-            if (strLisCmp(rule.parentScopes, parentScopes) == 0) {
+            if (rule.parentScopes == parentScopes) {
                 // bingo! => we get to merge this into an existing one
                 rule.acceptOverwrite(scopeDepth, fontStyle, foreground, background)
                 return

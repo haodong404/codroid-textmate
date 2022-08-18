@@ -116,7 +116,7 @@ internal open class NSObjDecoder(
 
 }
 
-private class ListDecoder(
+internal class ListDecoder(
     private val obj: NSArray?, descriptor: SerialDescriptor
 ) : NSObjDecoder(obj, descriptor) {
 

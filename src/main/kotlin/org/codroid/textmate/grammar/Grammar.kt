@@ -29,7 +29,7 @@ fun createGrammar(
     regexLib
 )
 
-interface GrammarReposThemeProvider : GrammarRepository, ThemeProvider
+interface GrammarReposThemeProvider : GrammarRepository, ThemeProvider, Cloneable
 
 interface GrammarRepository {
     fun lookup(scopeName: ScopeName): RawGrammar?
@@ -56,7 +56,7 @@ class Grammar(
     private val balancedBracketSelectors: BalancedBracketSelectors?,
     private val grammarRepository: GrammarReposThemeProvider,
     private val regexLib: RegexLib
-) : Tokenizer, RuleFactoryHelper, RegexLib, RuleRegistryRegexLib {
+) : Tokenizer, RuleFactoryHelper, RegexLib, RuleRegistryRegexLib, Cloneable {
 
     private var rootId = RuleId.End
     private var lastRuleId = RuleId.from(0)
@@ -84,8 +84,8 @@ class Grammar(
     }
 
     fun dispose() {
-        for (rule in this.ruleId2Desc) {
-            this.dispose()
+        for (rule in this.ruleId2Desc.values) {
+            rule?.dispose()
         }
     }
 
@@ -109,7 +109,7 @@ class Grammar(
         grammarRepository.lookup(scopeName)?.let { grammar ->
             // add injections from the current grammar
             val rawInjections = grammar.injections
-            if (rawInjections != null) {
+            if (rawInjections.isNotEmpty()) {
                 for (expression in rawInjections.keys) {
                     collectInjections(
                         result, expression, rawInjections[expression]!!, this, grammar

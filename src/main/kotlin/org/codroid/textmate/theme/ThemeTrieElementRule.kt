@@ -6,9 +6,9 @@ class ThemeTrieElementRule(
     var fontStyle: FontStyle,
     var foreground: UInt,
     var background: UInt
-) : Cloneable {
+) : Cloneable, Comparable<ThemeTrieElementRule> {
     public override fun clone(): ThemeTrieElementRule = ThemeTrieElementRule(
-        scopeDepth, parentScopes, fontStyle, foreground, background
+        scopeDepth, parentScopes?.toList(), fontStyle, foreground, background
     )
 
     fun acceptOverwrite(scopeDepth: Int, fontStyle: FontStyle, foreground: UInt, background: UInt) {
@@ -27,6 +27,26 @@ class ThemeTrieElementRule(
         if (background != 0u) {
             this.background = background
         }
+    }
+
+    override fun compareTo(other: ThemeTrieElementRule): Int {
+        if (this.scopeDepth == other.scopeDepth) {
+            val aParentScopes = this.parentScopes
+            val bParentScopes = other.parentScopes
+            val aParentScopesLen = aParentScopes?.size ?: 0
+            val bParentScopesLen = bParentScopes?.size ?: 0
+            if (aParentScopesLen == bParentScopesLen) {
+                repeat(aParentScopesLen) {
+                    val aLen = aParentScopes!![it].length
+                    val bLen = bParentScopes!![it].length
+                    if (aLen != bLen) {
+                        return bLen - aLen
+                    }
+                }
+            }
+            return bParentScopesLen - aParentScopesLen
+        }
+        return other.scopeDepth - this.scopeDepth
     }
 
     override fun toString(): String {

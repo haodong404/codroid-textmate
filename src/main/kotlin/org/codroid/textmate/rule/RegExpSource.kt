@@ -64,7 +64,7 @@ class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
     }
 
     public override fun clone(): RegExpSource {
-        return RegExpSource(this.source, this.ruleId)
+        return RegExpSource(this.source, this.ruleId.clone())
     }
 
     fun resolveBackReferences(lineText: String, captureIndices: Array<IntRange>): String {
@@ -102,12 +102,14 @@ class RegExpSource(regExpSource: String, var ruleId: RuleId) : Cloneable {
                             a1g0Result[pos + 1] = 'A';
                             a1g1Result[pos + 1] = 'A';
                         }
+
                         'G' -> {
                             a0g0Result[pos + 1] = '\uFFFF';
                             a0g1Result[pos + 1] = 'G';
                             a1g0Result[pos + 1] = '\uFFFF';
                             a1g1Result[pos + 1] = 'G';
                         }
+
                         else -> {
                             a0g0Result[pos + 1] = nextChar;
                             a0g1Result[pos + 1] = nextChar;

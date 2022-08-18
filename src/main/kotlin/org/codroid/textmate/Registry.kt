@@ -67,7 +67,7 @@ class SyncRegistry(
         balancedBracketSelectors: BalancedBracketSelectors?
     ): Tokenizer? {
         if (!this.grammars.contains(scopeName)) {
-            val rawGrammar = this.rawGrammars[scopeName] ?: return null
+            val rawGrammar = this.rawGrammars[scopeName]?.clone() ?: return null
             this.grammars[scopeName] = createGrammar(
                 scopeName, rawGrammar, initialLanguage, embeddedLanguages, tokenTypes, balancedBracketSelectors, this,
                 this.regexLib
@@ -75,4 +75,5 @@ class SyncRegistry(
         }
         return this.grammars[scopeName]
     }
+
 }
