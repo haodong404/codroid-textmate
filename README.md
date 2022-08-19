@@ -99,6 +99,10 @@ Tokenizing line: }
  - Token from 0 to 1 ( } ) with scopes source.kotlin, meta.function.kotlin, meta.block.kotlin, punctuation.section.group.end.kotlin
 ```
 
+## Custom regex lib
+
+[oniguruma-lib](https://github.com/zacharychin233/codroid-textmate/tree/master/oniguruma-lib) **depends** on [joni](https://github.com/jruby/joni), but this library is not perfect yet, some features are not implemented. Therefore, I stongly recommend using the original [oniguruma](https://github.com/kkos/oniguruma) lib if you can.
+
 ## License
 
 [MIT](https://github.com/zacharychin233/codroid-textmate/blob/master/LICENSE)

@@ -57,7 +57,6 @@ class ParseTest {
             )
         )
         val result = decodeFromNSObject<Entity>(dict)
-        println(result)
         assertEquals("Codroid", result.name)
         assertEquals(12.3F, result.weight)
         assertEquals(1000L, result.long)

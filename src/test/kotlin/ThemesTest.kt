@@ -4,6 +4,7 @@ import org.codroid.textmate.exceptions.TextMateException
 import org.codroid.textmate.theme.*
 import java.io.File
 import kotlin.experimental.or
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -54,8 +55,15 @@ class ThemeInfo(
 
 class ThemesTest {
 
-    @Test
-    fun `Test theme with grammar and languages`() {
+    private lateinit var testFiles: List<File>
+    private lateinit var themeData: List<ThemeData>
+    private lateinit var resolver: Resolver
+
+    // Split the test into two parts, preventing tests from being ignored due to insufficient memory.
+    private var splittingPoint = 0
+
+    @BeforeTest
+    fun `Init grammar and languages`() {
         val themeInfos = arrayOf(
             ThemeInfo("abyss", "Abyss.tmTheme"),
             ThemeInfo("dark_vs", "dark_vs.json"),
@@ -82,18 +90,24 @@ class ThemesTest {
 
         val languages =
             parseJson<Array<LanguageRegistration>>(themeFile("languages.json")!!.inputStream())
-        val resolver = Resolver(OnigLib(), grammars, languages)
-        val themeData = themeInfos.map { it.create(resolver) }
+        resolver = Resolver(OnigLib(), grammars, languages)
+        themeData = themeInfos.map { it.create(resolver) }
         // Discover all tests
-        var testFiles = themeFile("tests/")?.listFiles()
-        if (testFiles != null) {
-            testFiles = testFiles.filter { !Regex("\\.result$").containsMatchIn(it.name) }.toTypedArray()
-            testFiles = testFiles.filter { !Regex("\\.result.patch$").containsMatchIn(it.name) }.toTypedArray()
-            testFiles = testFiles.filter { !Regex("\\.actual$").containsMatchIn(it.name) }.toTypedArray()
-            testFiles = testFiles.filter { !Regex("\\.diff.html$").containsMatchIn(it.name) }.toTypedArray()
+        testFiles = themeFile("tests/")?.listFiles()?.toList() ?: emptyList()
+        if (testFiles.isNotEmpty()) {
+            testFiles = testFiles.asSequence()
+                .filter { !Regex("\\.result$").containsMatchIn(it.name) }
+                .filter { !Regex("\\.result.patch$").containsMatchIn(it.name) }
+                .filter { !Regex("\\.actual$").containsMatchIn(it.name) }
+                .filter { !Regex("\\.diff.html$").containsMatchIn(it.name) }
+                .toList()
+            splittingPoint = (testFiles.size / 2) + 10
         }
+    }
 
-        for (testFile in testFiles ?: emptyArray()) {
+    @Test
+    fun `Test theme with grammar and languages, part 1`() {
+        for (testFile in testFiles.subList(0, splittingPoint)) {
             val themeTest = ThemeTest(testFile, themeData.toTypedArray(), resolver)
             // The java port Oniguruma lib is not perfect now, it cannot match non-ASCII characters
             if (themeTest.testName == "test-7115.xml") continue
@@ -103,6 +117,20 @@ class ThemesTest {
             println("√")
         }
     }
+
+    @Test
+    fun `Test theme with grammar and languages, part 2`() {
+        for (testFile in testFiles.subList(splittingPoint, testFiles.size)) {
+            val themeTest = ThemeTest(testFile, themeData.toTypedArray(), resolver)
+            // The java port Oniguruma lib is not perfect now, it cannot match non-ASCII characters
+            if (themeTest.testName == "test-7115.xml") continue
+            themeTest.evaluate()
+            print("ThemeTesting: ${themeTest.testName.padEnd(30)}")
+            assertEquals(themeTest.expected, themeTest.actual)
+            println("√")
+        }
+    }
+
 
     @Test
     fun `Theme matching gives higher priority to deeper matches`() {

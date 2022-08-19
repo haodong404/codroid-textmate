@@ -8,7 +8,7 @@ class ThemeTrieElement(
 ) {
     fun match(scope: ScopeName): List<ThemeTrieElementRule> {
         if (scope.isEmpty()) {
-            return listOf(mainRule).plus(rulesWithParentScopes).sorted()
+            return rulesWithParentScopes.plusElement(mainRule).sorted()
         }
         val dotIndex = scope.indexOf('.')
         val head: String
@@ -23,7 +23,7 @@ class ThemeTrieElement(
         if (this.children.containsKey(head)) {
             return this.children[head]!!.match(tail)
         }
-        return listOf(mainRule).plus(rulesWithParentScopes).sorted()
+        return rulesWithParentScopes.plusElement(mainRule).sorted()
     }
 
     fun insert(
