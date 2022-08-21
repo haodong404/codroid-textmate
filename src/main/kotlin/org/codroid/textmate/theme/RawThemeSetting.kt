@@ -65,7 +65,6 @@ data class RawThemeSetting(
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 object RawThemeSettingScopeSerializer :
     KSerializer<Array<String>> {
 
