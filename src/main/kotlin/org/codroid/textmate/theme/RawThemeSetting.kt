@@ -16,7 +16,8 @@ import org.codroid.textmate.json
 
 @Serializable
 data class Setting(
-    var fontStyle: String? = null, var foreground: String? = null, var background: String? = null
+    val fontStyle: String? = null, var foreground: String? = null, var background: String? = null,
+    val caret: String? = null, val lineHighlight: String? = null, val selection: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         other?.let {

@@ -233,8 +233,8 @@ class Grammar(
                 rawDefaultMetadata.tokenType,
                 null,
                 defaultStyle.fontStyle,
-                defaultStyle.foregroundId,
-                defaultStyle.backgroundId
+                defaultStyle.foregroundId.toUInt(),
+                defaultStyle.backgroundId.toUInt()
             )
             val rootScopeName = this.getRule(this.rootId)?.getName(null, null)
             val scopeList: AttributedScopeStack = if (rootScopeName != null) {

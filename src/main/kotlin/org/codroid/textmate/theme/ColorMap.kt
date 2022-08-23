@@ -2,24 +2,24 @@ package org.codroid.textmate.theme
 
 class ColorMap(colorMap: Array<String>? = null) {
     private val isFrozen: Boolean
-    private var lastColorId = 0u
-    private val id2color = mutableMapOf<UInt, String>()
-    private val color2id = mutableMapOf<String, UInt>()
+    private var lastColorId = 0
+    private val id2color = mutableMapOf<Int, String>()
+    private val color2id = mutableMapOf<String, Int>()
 
     init {
         if (colorMap != null) {
             isFrozen = true
             for ((idx, item) in colorMap.withIndex()) {
-                color2id[item] = idx.toUInt()
-                id2color[idx.toUInt()] = item
+                color2id[item] = idx
+                id2color[idx] = item
             }
         } else {
             isFrozen = false
         }
     }
 
-    fun getId(color: String?): UInt {
-        if (color == null) return 0u
+    fun getId(color: String?): Int {
+        if (color == null) return 0
         val colorUpper = color.uppercase()
         var value = color2id[colorUpper]
         if (value != null) {
@@ -34,7 +34,7 @@ class ColorMap(colorMap: Array<String>? = null) {
         return value
     }
 
-    fun getColorMap(): Map<UInt, String> = id2color
+    fun getColorMap(): Map<Int, String> = id2color
     override fun toString(): String {
         return "ColorMap(isFrozen=$isFrozen, lastColorId=$lastColorId, id2color=$id2color, color2id=$color2id)"
     }

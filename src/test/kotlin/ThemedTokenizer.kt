@@ -10,7 +10,7 @@ import org.codroid.textmate.grammar.StateStack
 data class ThemedToken(val content: String, val color: String)
 
 @OptIn(ExperimentalUnsignedTypes::class)
-fun tokenizeWithTheme(colorMap: Map<UInt, String>, fileContents: String, grammar: Tokenizer): Array<ThemedToken> {
+fun tokenizeWithTheme(colorMap: Map<Int, String>, fileContents: String, grammar: Tokenizer): Array<ThemedToken> {
     val lines = fileContents.split(Regex("\r\n|\r|\n"))
     var ruleStack: StateStack? = null
     val actual = mutableListOf<ThemedToken>()
@@ -29,7 +29,7 @@ fun tokenizeWithTheme(colorMap: Map<UInt, String>, fileContents: String, grammar
 
             val metadata = result.tokens[2 * j + 1]
             val foreground = EncodedTokenAttributes.getForeground(metadata)
-            val foregroundColor = colorMap[foreground]
+            val foregroundColor = colorMap[foreground.toInt()]
             actual.add(ThemedToken(tokenText, foregroundColor!!.uppercase()))
         }
         ruleStack = result.ruleStack

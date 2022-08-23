@@ -31,8 +31,8 @@ class AttributedScopeStack(
             styleAttributes: StyleAttributes?
         ): EncodedToken {
             var fontStyle = FontStyleConsts.NotSet
-            var foreground = 0u
-            var background = 0u
+            var foreground = 0
+            var background = 0
 
             if (styleAttributes != null) {
                 fontStyle = styleAttributes.fontStyle
@@ -43,7 +43,7 @@ class AttributedScopeStack(
                 existingTokenAttributes,
                 basicScopeAttributes.languageId.toUInt(),
                 basicScopeAttributes.tokenType,
-                null, fontStyle, foreground, background
+                null, fontStyle, foreground.toUInt(), background.toUInt()
             )
         }
 

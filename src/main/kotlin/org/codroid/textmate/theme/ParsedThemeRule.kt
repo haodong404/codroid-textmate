@@ -6,5 +6,7 @@ data class ParsedThemeRule(
     val index: Int,
     val fontStyle: FontStyle,
     val foreground: String?,
-    val background: String?
+    val background: String?,
+
+    val caret: String? = null, val lineHighlight: String? = null, val selection: String? = null,
 )

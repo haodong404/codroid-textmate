@@ -35,7 +35,7 @@ class Theme(
         return@CachedFn this.root.match(it)
     }
 
-    fun getColorMap(): Map<UInt, String> = colorMap.getColorMap()
+    fun getColorMap(): Map<Int, String> = colorMap.getColorMap()
 
     fun getDefaults(): StyleAttributes = defaults
 
@@ -47,7 +47,7 @@ class Theme(
             scopePathMatchesParentScopes(scopePath.parent, it.parentScopes)
         } ?: return null
         return StyleAttributes(
-            effectiveRule.fontStyle, effectiveRule.foreground, effectiveRule.background
+            effectiveRule.fontStyle, effectiveRule.foreground, effectiveRule.background,
         )
     }
 
@@ -144,14 +144,12 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
                     }
                 }
             }
-            var foreground: String? = null
-            if (isValidHexColor(setting.settings?.foreground ?: "")) {
-                foreground = setting.settings?.foreground
-            }
-            var background: String? = null
-            if (isValidHexColor(setting.settings?.background ?: "")) {
-                background = setting.settings?.background
-            }
+            val foreground = validHexColor(setting.settings?.foreground)
+            val background = validHexColor(setting.settings?.background)
+
+            val caret = validHexColor(setting.settings?.caret)
+            val lineHighlight = validHexColor(setting.settings?.lineHighlight)
+            val selection = validHexColor(setting.settings?.selection)
 
             for (item in scopes) {
                 val scopeNow = item.trim()
@@ -164,7 +162,8 @@ fun parseTheme(source: RawTheme?): MutableList<ParsedThemeRule> {
                 }
                 result.add(
                     ParsedThemeRule(
-                        scope, parentScopes, idx, fontStyle, foreground, background
+                        scope, parentScopes, idx, fontStyle, foreground, background,
+                        caret, lineHighlight, selection
                     )
                 )
             }
@@ -214,28 +213,31 @@ private fun resolveParsedThemeRules(
     var defaultFontStyle = FontStyleConsts.None
     var defaultForeground = "#000000"
     var defaultBackground = "#ffffff"
-    val parsedThemeRulesClone = LinkedList<ParsedThemeRule>()
-    for (item in parsedThemeRules) {
-        parsedThemeRulesClone.add(item)
-    }
-    while (parsedThemeRulesClone.isNotEmpty() && parsedThemeRulesClone.first.scope.isEmpty()) {
-        val incomingDefaults = parsedThemeRulesClone.removeFirst()
+    var defaultCaret = "#ffffff"
+    var defaultLineHighlight = "#eaeaea"
+    var defaultSelection = "#cdcdcd"
+    while (parsedThemeRules.isNotEmpty() && parsedThemeRules.first().scope.isEmpty()) {
+        val incomingDefaults = parsedThemeRules.removeFirst()
         if (incomingDefaults.fontStyle != FontStyleConsts.NotSet) {
             defaultFontStyle = incomingDefaults.fontStyle
         }
         incomingDefaults.foreground?.let { defaultForeground = it }
         incomingDefaults.background?.let { defaultBackground = it }
+        incomingDefaults.caret?.let { defaultCaret = it }
+        incomingDefaults.lineHighlight?.let { defaultLineHighlight = it }
+        incomingDefaults.selection?.let { defaultSelection = it }
     }
     val colorMap1 = ColorMap(colorMap)
     val defaults = StyleAttributes(
-        defaultFontStyle, colorMap1.getId(defaultForeground), colorMap1.getId(defaultBackground)
+        defaultFontStyle, colorMap1.getId(defaultForeground), colorMap1.getId(defaultBackground),
+        colorMap1.getId(defaultCaret), colorMap1.getId(defaultLineHighlight), colorMap1.getId(defaultSelection)
     )
     val root = ThemeTrieElement(
         ThemeTrieElementRule(
-            0, null, FontStyleConsts.NotSet, 0u, 0u
+            0, null, FontStyleConsts.NotSet, 0, 0
         )
     )
-    for (rule in parsedThemeRulesClone) {
+    for (rule in parsedThemeRules) {
         root.insert(
             0,
             rule.scope,

@@ -25,7 +25,6 @@ fun basename(path: String): String {
     }
 }
 
-
 object RegexSource {
 
     private val CAPTURING_REGEX_SOURCE by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
@@ -105,6 +104,14 @@ fun isValidHexColor(hex: String): Boolean {
         Regex("^#[\\da-f]{4}\$", RegexOption.IGNORE_CASE).containsMatchIn(hex)
     }
 
+}
+
+fun validHexColor(hex: String?): String? {
+    if (hex == null) return null
+    if (isValidHexColor(hex)) {
+        return hex
+    }
+    return null
 }
 
 /**

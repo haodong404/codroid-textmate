@@ -31,8 +31,8 @@ class ThemeTrieElement(
         scope: ScopeName,
         parentScopes: List<ScopeName>?,
         fontStyle: FontStyle,
-        foreground: UInt,
-        background: UInt
+        foreground: Int,
+        background: Int
     ) {
         if (scope.isEmpty()) {
             doInsertHere(scopeDepth, parentScopes, fontStyle, foreground, background)
@@ -69,7 +69,7 @@ class ThemeTrieElement(
     }
 
     private fun doInsertHere(
-        scopeDepth: Int, parentScopes: List<ScopeName>?, fontStyle: FontStyle, foreground: UInt, background: UInt
+        scopeDepth: Int, parentScopes: List<ScopeName>?, fontStyle: FontStyle, foreground: Int, background: Int
     ) {
         if (parentScopes == null) {
             // Merge into the main rule
@@ -93,10 +93,10 @@ class ThemeTrieElement(
         if (fontStyle == FontStyleConsts.NotSet) {
             fontStyleCopy = mainRule.fontStyle
         }
-        if (foreground == 0u) {
+        if (foreground == 0) {
             foregroundCopy = mainRule.foreground
         }
-        if (background == 0u) {
+        if (background == 0) {
             backgroundCopy = mainRule.background
         }
         rulesWithParentScopes.add(

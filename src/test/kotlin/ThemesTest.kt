@@ -267,10 +267,10 @@ class ThemesTest {
         fun match(vararg paths: ScopeName): Setting? {
             val result = theme.match(ScopeStack.from(*paths)) ?: return null
             val obj = Setting(fontStyle = fontStyleToString(result.fontStyle))
-            if (result.foregroundId != 0u) {
+            if (result.foregroundId != 0) {
                 obj.foreground = map[result.foregroundId]
             }
-            if (result.backgroundId != 0u) {
+            if (result.backgroundId != 0) {
                 obj.background = map[result.backgroundId]
             }
             return obj
@@ -435,32 +435,35 @@ class ThemesTest {
             assertEquals(expected, strArrCmp(a, b))
             println("√")
         }
-        test("001", null, null, 0);
-        test("002", null, arrayOf(), -1);
-        test("003", null, arrayOf("a"), -1);
-        test("004", arrayOf(), null, 1);
-        test("005", arrayOf("a"), null, 1);
-        test("006", arrayOf(), arrayOf(), 0);
-        test("007", arrayOf(), arrayOf("a"), -1);
-        test("008", arrayOf("a"), arrayOf(), 1);
-        test("009", arrayOf("a"), arrayOf("a"), 0);
-        test("010", arrayOf("a", "b"), arrayOf("a"), 1);
-        test("011", arrayOf("a"), arrayOf("a", "b"), -1);
-        test("012", arrayOf("a", "b"), arrayOf("a", "b"), 0);
-        test("013", arrayOf("a", "b"), arrayOf("a", "c"), -1);
-        test("014", arrayOf("a", "c"), arrayOf("a", "b"), 1);
+        test("001", null, null, 0)
+        test("002", null, arrayOf(), -1)
+        test("003", null, arrayOf("a"), -1)
+        test("004", arrayOf(), null, 1)
+        test("005", arrayOf("a"), null, 1)
+        test("006", arrayOf(), arrayOf(), 0)
+        test("007", arrayOf(), arrayOf("a"), -1)
+        test("008", arrayOf("a"), arrayOf(), 1)
+        test("009", arrayOf("a"), arrayOf("a"), 0)
+        test("010", arrayOf("a", "b"), arrayOf("a"), 1)
+        test("011", arrayOf("a"), arrayOf("a", "b"), -1)
+        test("012", arrayOf("a", "b"), arrayOf("a", "b"), 0)
+        test("013", arrayOf("a", "b"), arrayOf("a", "c"), -1)
+        test("014", arrayOf("a", "c"), arrayOf("a", "b"), 1)
     }
 
     @Test
     fun `Theme resolving always has defaults`() {
         val actual = Theme.createFromParsedTheme(mutableListOf())
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#000000")
         val b = colorMap.getId("#ffffff")
+        val caret = colorMap.getId("#ffffff")
+        val lineHighlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, caret, lineHighlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet,
@@ -482,12 +485,14 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#000000")
         val b = colorMap.getId("#ffffff")
+        val highlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, b, highlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -508,12 +513,14 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#000000")
         val b = colorMap.getId("#ffffff")
+        val highlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, b, highlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -534,12 +541,14 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#000000")
         val b = colorMap.getId("#ffffff")
+        val highlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.Bold, a, b),
+            StyleAttributes(FontStyleConsts.Bold, a, b, b, highlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -560,12 +569,14 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#ff0000")
         val b = colorMap.getId("#ffffff")
+        val highlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, b, highlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -586,12 +597,15 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#000000")
         val b = colorMap.getId("#ff0000")
+        val caret = colorMap.getId("#ffffff")
+        val highlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, caret, highlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -600,6 +614,92 @@ class ThemesTest {
         )
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun `Theme resolving respects incoming defaults 6`() {
+        val actual = Theme.createFromParsedTheme(
+            mutableListOf(
+                ParsedThemeRule(
+                    "", null, -1, FontStyleConsts.NotSet,
+                    null, null, "#ff0000"
+                )
+            )
+        )
+        val colorMap = ColorMap()
+        val notSet = 0
+        val a = colorMap.getId("#000000")
+        val b = colorMap.getId("#ffffff")
+        val caret = colorMap.getId("#ff0000")
+        val highlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
+        val expected = Theme(
+            colorMap,
+            StyleAttributes(FontStyleConsts.None, a, b, caret, highlight, selection),
+            ThemeTrieElement(
+                ThemeTrieElementRule(
+                    0, null, FontStyleConsts.NotSet, notSet, notSet
+                )
+            )
+        )
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Theme resolving respects incoming defaults 7`() {
+        val actual = Theme.createFromParsedTheme(
+            mutableListOf(
+                ParsedThemeRule(
+                    "", null, -1, FontStyleConsts.NotSet,
+                    null, null, null, "#ea0000"
+                )
+            )
+        )
+        val colorMap = ColorMap()
+        val notSet = 0
+        val a = colorMap.getId("#000000")
+        val b = colorMap.getId("#ffffff")
+        val highlight = colorMap.getId("#ea0000")
+        val selection = colorMap.getId("#cdcdcd")
+        val expected = Theme(
+            colorMap,
+            StyleAttributes(FontStyleConsts.None, a, b, b, highlight, selection),
+            ThemeTrieElement(
+                ThemeTrieElementRule(
+                    0, null, FontStyleConsts.NotSet, notSet, notSet
+                )
+            )
+        )
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Theme resolving respects incoming defaults 8`() {
+        val actual = Theme.createFromParsedTheme(
+            mutableListOf(
+                ParsedThemeRule(
+                    "", null, -1, FontStyleConsts.NotSet,
+                    null, null, null, null, "#cd0000"
+                )
+            )
+        )
+        val colorMap = ColorMap()
+        val notSet = 0
+        val a = colorMap.getId("#000000")
+        val b = colorMap.getId("#ffffff")
+        val highlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cd0000")
+        val expected = Theme(
+            colorMap,
+            StyleAttributes(FontStyleConsts.None, a, b, b, highlight, selection),
+            ThemeTrieElement(
+                ThemeTrieElementRule(
+                    0, null, FontStyleConsts.NotSet, notSet, notSet
+                )
+            )
+        )
+        assertEquals(expected, actual)
+    }
+
 
     @Test
     fun `Theme resolving can merge incoming defaults`() {
@@ -616,16 +716,31 @@ class ThemesTest {
                 ParsedThemeRule(
                     "", null, -1, FontStyleConsts.Bold,
                     null, null
-                )
+                ),
+                ParsedThemeRule(
+                    "", null, -1, FontStyleConsts.Bold,
+                    null, null, "#0000ff", null, null
+                ),
+                ParsedThemeRule(
+                    "", null, -1, FontStyleConsts.Bold,
+                    null, null, null, "#ffff00", null
+                ),
+                ParsedThemeRule(
+                    "", null, -1, FontStyleConsts.Bold,
+                    null, null, null, null, "#ffffff"
+                ),
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#00ff00")
         val b = colorMap.getId("#ff0000")
+        val caret = colorMap.getId("#0000ff")
+        val lineHighlight = colorMap.getId("#ffff00")
+        val selection = colorMap.getId("#ffffff")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.Bold, a, b),
+            StyleAttributes(FontStyleConsts.Bold, a, b, caret, lineHighlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -641,7 +756,7 @@ class ThemesTest {
             mutableListOf(
                 ParsedThemeRule(
                     "", null, -1, FontStyleConsts.NotSet,
-                    "#F8F8F2", "#272822"
+                    "#F8F8F2", "#272822", null, "#121212", null
                 ),
                 ParsedThemeRule(
                     "var", null, -1, FontStyleConsts.NotSet,
@@ -650,13 +765,16 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#F8F8F2")
         val b = colorMap.getId("#272822")
+        val caret = colorMap.getId("#ffffff")
+        val lineHighlight = colorMap.getId("#121212")
+        val selection = colorMap.getId("#cdcdcd")
         val c = colorMap.getId("#ff0000")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, caret, lineHighlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -689,13 +807,16 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#F8F8F2")
         val b = colorMap.getId("#272822")
+        val caret = colorMap.getId("#ffffff")
+        val lineHighlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val c = colorMap.getId("#ff0000")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, caret, lineHighlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -728,14 +849,17 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#F8F8F2")
         val b = colorMap.getId("#272822")
+        val caret = colorMap.getId("#ffffff")
+        val lineHighlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val c = colorMap.getId("#ff0000")
         val d = colorMap.getId("#00ff00")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, caret, lineHighlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -777,9 +901,12 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#F8F8F2")
         val b = colorMap.getId("#272822")
+        val caret = colorMap.getId("#ffffff")
+        val lineHighlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val c = colorMap.getId("#100000")
         val d = colorMap.getId("#200000")
         val e = colorMap.getId("#300000")
@@ -787,7 +914,7 @@ class ThemesTest {
         val g = colorMap.getId("#00ff00")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, caret, lineHighlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet
@@ -862,15 +989,18 @@ class ThemesTest {
             )
         )
         val colorMap = ColorMap()
-        val notSet = 0u
+        val notSet = 0
         val a = colorMap.getId("#F8F8F2")
         val b = colorMap.getId("#272822")
+        val caret = colorMap.getId("#ffffff")
+        val lineHighlight = colorMap.getId("#eaeaea")
+        val selection = colorMap.getId("#cdcdcd")
         val c = colorMap.getId("#100000")
         val d = colorMap.getId("#300000")
         val e = colorMap.getId("#200000")
         val expected = Theme(
             colorMap,
-            StyleAttributes(FontStyleConsts.None, a, b),
+            StyleAttributes(FontStyleConsts.None, a, b, caret, lineHighlight, selection),
             ThemeTrieElement(
                 ThemeTrieElementRule(
                     0, null, FontStyleConsts.NotSet, notSet, notSet

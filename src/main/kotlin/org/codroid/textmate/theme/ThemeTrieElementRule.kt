@@ -4,14 +4,14 @@ class ThemeTrieElementRule(
     var scopeDepth: Int,
     val parentScopes: List<ScopeName>?,
     var fontStyle: FontStyle,
-    var foreground: UInt,
-    var background: UInt
+    var foreground: Int,
+    var background: Int
 ) : Cloneable, Comparable<ThemeTrieElementRule> {
     public override fun clone(): ThemeTrieElementRule = ThemeTrieElementRule(
         scopeDepth, parentScopes?.toList(), fontStyle, foreground, background
     )
 
-    fun acceptOverwrite(scopeDepth: Int, fontStyle: FontStyle, foreground: UInt, background: UInt) {
+    fun acceptOverwrite(scopeDepth: Int, fontStyle: FontStyle, foreground: Int, background: Int) {
         if (this.scopeDepth > scopeDepth) {
             println("How did this happen?")
         } else {
@@ -21,10 +21,10 @@ class ThemeTrieElementRule(
         if (fontStyle != FontStyleConsts.NotSet) {
             this.fontStyle = fontStyle
         }
-        if (foreground != 0u) {
+        if (foreground != 0) {
             this.foreground = foreground
         }
-        if (background != 0u) {
+        if (background != 0) {
             this.background = background
         }
     }

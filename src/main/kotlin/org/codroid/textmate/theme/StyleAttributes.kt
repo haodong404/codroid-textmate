@@ -1,7 +1,8 @@
 package org.codroid.textmate.theme
 
 data class StyleAttributes(
-    val fontStyle: FontStyle, val foregroundId: UInt, val backgroundId: UInt
+    val fontStyle: FontStyle, val foregroundId: Int, val backgroundId: Int,
+    val caretId: Int = 0, val lineHighlightId: Int = 0, val selectionId: Int = 0,
 ) {
     override fun equals(other: Any?): Boolean {
         other?.let {

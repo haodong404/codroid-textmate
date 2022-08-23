@@ -26,7 +26,7 @@ class SyncRegistry(
         }
     }
 
-    fun getColorMap(): Map<UInt, String> = this.theme.getColorMap()
+    fun getColorMap(): Map<Int, String> = this.theme.getColorMap()
 
     /**
      * Add `grammar` to registry and return a list of referenced scope names

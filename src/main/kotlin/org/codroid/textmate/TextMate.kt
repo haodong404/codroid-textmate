@@ -119,10 +119,12 @@ class Registry(val options: RegistryOptions) {
         this.syncRegistry.theme = Theme.createFromRawTheme(theme, colorMap)
     }
 
+    fun getTheme(): Theme = this.syncRegistry.theme
+
     /**
      * Returns a lookup array for color ids.
      */
-    fun getColorMap(): Map<UInt, String> = this.syncRegistry.getColorMap()
+    fun getColorMap(): Map<Int, String> = this.syncRegistry.getColorMap()
 
     /**
      * Load the grammar for `scopeName` and all referenced included grammars asynchronously.
