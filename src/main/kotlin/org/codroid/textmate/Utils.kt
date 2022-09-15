@@ -14,10 +14,9 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromStream
 import org.codroid.textmate.grammar.RawGrammar
-import org.codroid.textmate.grammar.RawRule
 import java.io.InputStream
 
-fun basename(path: String): String {
+internal fun basename(path: String): String {
     return when (val idx = path.lastIndexOf('/').inv() or path.lastIndexOf('\\').inv()) {
         0 -> path
         (path.length - 1).inv() -> basename(path.substring(0, path.length - 1))
@@ -25,7 +24,7 @@ fun basename(path: String): String {
     }
 }
 
-object RegexSource {
+internal object RegexSource {
 
     private val CAPTURING_REGEX_SOURCE by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         globalRegexLib.compile("\\$(\\d+)|\\$\\{(\\d+):/(downcase|upcase)}")
@@ -64,17 +63,17 @@ object RegexSource {
     }
 }
 
-fun strcmp(a: String, b: String): Int {
+internal fun strcmp(a: String, b: String): Int {
     return if (a < b) -1
     else if (a > b) 1
     else 0
 }
 
-fun strLisCmp(a: List<String>?, b: List<String>?): Int {
+internal fun strLisCmp(a: List<String>?, b: List<String>?): Int {
     return strArrCmp(a?.toTypedArray(), b?.toTypedArray())
 }
 
-fun strArrCmp(a: Array<String>?, b: Array<String>?): Int {
+internal fun strArrCmp(a: Array<String>?, b: Array<String>?): Int {
     if (a == null && b == null) return 0
     else if (a == null) return -1
     else if (b == null) return 1
@@ -93,7 +92,7 @@ fun strArrCmp(a: Array<String>?, b: Array<String>?): Int {
     return len1 - len2
 }
 
-fun isValidHexColor(hex: String): Boolean {
+internal fun isValidHexColor(hex: String): Boolean {
     return if (Regex("^#[\\da-f]{6}\$", RegexOption.IGNORE_CASE).containsMatchIn(hex)) {
         true
     } else if (Regex("^#[\\da-f]{8}\$", RegexOption.IGNORE_CASE).containsMatchIn(hex)) {
@@ -106,7 +105,7 @@ fun isValidHexColor(hex: String): Boolean {
 
 }
 
-fun validHexColor(hex: String?): String? {
+internal fun validHexColor(hex: String?): String? {
     if (hex == null) return null
     if (isValidHexColor(hex)) {
         return hex
@@ -117,12 +116,12 @@ fun validHexColor(hex: String?): String? {
 /**
  * Escapes regular expression characters in a given string
  */
-fun escapeRegExpCharacters(value: String): String =
+internal fun escapeRegExpCharacters(value: String): String =
     value.replace(Regex("[\\-\\\\{}*+?|^$.,\\[\\]()#\\s]")) {
         "\\${it.value}"
     }
 
-class CachedFn<K, V>(private val fn: (key: K) -> V) {
+internal class CachedFn<K, V>(private val fn: (key: K) -> V) {
     private val cache = HashMap<K, V>()
 
     fun get(key: K): V {
@@ -137,21 +136,21 @@ class CachedFn<K, V>(private val fn: (key: K) -> V) {
 
 private var performance: (() -> Int)? = null
 
-val performanceNow =
+internal val performanceNow =
     if (performance == null) {        // performance.now() is not available in this environment, so use Date.now()
         { System.currentTimeMillis() }
     } else {
         performance!!
     }
 
-fun Byte.toBoolean(): Boolean {
+internal fun Byte.toBoolean(): Boolean {
     return when (this) {
         0.toByte() -> false
         else -> true
     }
 }
 
-object IntBooleanSerializer : KSerializer<Boolean> {
+internal object IntBooleanSerializer : KSerializer<Boolean> {
 
     override val descriptor: SerialDescriptor
         get() = PrimitiveSerialDescriptor("IntBoolean", PrimitiveKind.BOOLEAN)
@@ -207,28 +206,28 @@ private fun dynamicMap(element: JsonElement): JsonElement {
     return element
 }
 
-inline fun <reified T : Any> parsePLIST(input: InputStream): T {
+internal inline fun <reified T : Any> parsePLIST(input: InputStream): T {
     val obj = PropertyListParser.parse(input)
     return decodeFromNSObject(obj)
 }
 
-val json = Json {
+internal val json = Json {
     ignoreUnknownKeys = true
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T> parseJson(input: InputStream): T {
+internal inline fun <reified T> parseJson(input: InputStream): T {
     return json.decodeFromStream(input)
 }
 
-fun parseRawGrammar(input: InputStream, filePath: String): RawGrammar {
+internal fun parseRawGrammar(input: InputStream, filePath: String): RawGrammar {
     if (Regex("\\.json$").containsMatchIn(filePath)) {
         return parseJson(input)
     }
     return parsePLIST(input)
 }
 
-fun <T> List<T>.every(test: (value: T) -> Boolean): Boolean {
+internal fun <T> List<T>.every(test: (value: T) -> Boolean): Boolean {
     for (t in this) {
         if (!test(t)) {
             return false
@@ -237,7 +236,7 @@ fun <T> List<T>.every(test: (value: T) -> Boolean): Boolean {
     return true
 }
 
-fun <T> List<T>.some(test: (value: T) -> Boolean): Boolean {
+internal fun <T> List<T>.some(test: (value: T) -> Boolean): Boolean {
     for (t in this) {
         if (test(t)) {
             return true
@@ -246,6 +245,6 @@ fun <T> List<T>.some(test: (value: T) -> Boolean): Boolean {
     return false
 }
 
-fun IntRange.endExclusive(): Int = this.last + 1
+internal fun IntRange.endExclusive(): Int = this.last + 1
 
-fun IntRange.distance(): Int = this.endExclusive() - this.first
+internal fun IntRange.distance(): Int = this.endExclusive() - this.first

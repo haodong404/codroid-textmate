@@ -1,6 +1,5 @@
 package oniguruma
 
-import org.codroid.textmate.endExclusive
 import org.codroid.textmate.regex.MatchGroup
 import org.codroid.textmate.regex.MatchResult
 import org.codroid.textmate.regex.RegularExp
@@ -117,7 +116,7 @@ class OnigRegExp(source: String) : RegularExp(source) {
                 replaced = transform(search)
             }
             result = result.replaceRange(search.range, replaced)
-            search = search(result, search.range.endExclusive())
+            search = search(result, search.range.last + 1)
         }
         return result
     }
